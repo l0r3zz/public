@@ -40,6 +40,11 @@ func main() {
             j++
         }
     }
+
+	for w := range words {
+		findwords(words[w],words[w])
+	}
+
     delta := time.Now().Sub(programstart)
     fmt.Printf("Elapsed Time: %v\n", delta)
 }
@@ -72,6 +77,8 @@ func addWord( t *trienode, word []byte) *trienode {
     return t
 }
 
+func findwords( word []byte, tail []byte) [
+}
 
 func mmapFile(f *os.File) mmapData {
         st, err := f.Stat()
