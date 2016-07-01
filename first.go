@@ -4,37 +4,37 @@ package main
 import (
 	"fmt"
 	"log"
+	"mmapio"
 	"os"
 	"path/filepath"
-	"syscall"
 )
 
 // An mmapData is mmap'ed read-only data from a file.
-type mmapData struct {
-	f *os.File
-	d []byte
-}
+//type mmapData struct {
+//	f *os.File
+//	d []byte
+//}
 
-func mmapFile(f *os.File) mmapData {
-	st, err := f.Stat()
-	if err != nil {
-		log.Fatal(err)
-	}
-	size := st.Size()
-	if int64(int(size+4095)) != size+4095 {
-		log.Fatal("%s: too large for mmap", f.Name())
-	}
-	n := int(size)
-	if n == 0 {
-		return mmapData{f, nil}
-	}
-	data, err := syscall.Mmap(int(f.Fd()), 0, (n+4095)&^4095,
-		syscall.PROT_READ, syscall.MAP_SHARED)
-	if err != nil {
-		log.Fatal("mmap %s: %v", f.Name(), err)
-	}
-	return mmapData{f, data[:n]}
-}
+//func mmapFile(f *os.File) mmapData {
+//	st, err := f.Stat()
+//	if err != nil {
+//		log.Fatal(err)
+//	}
+//	size := st.Size()
+//	if int64(int(size+4095)) != size+4095 {
+//		log.Fatal("%s: too large for mmap", f.Name())
+//	}
+//	n := int(size)
+//	if n == 0 {
+//		return mmapData{f, nil}
+//	}
+//	data, err := syscall.Mmap(int(f.Fd()), 0, (n+4095)&^4095,
+//		syscall.PROT_READ, syscall.MAP_SHARED)
+//	if err != nil {
+//		log.Fatal("mmap %s: %v", f.Name(), err)
+//	}
+//	return mmapData{f, data[:n]}
+//}
 
 func main() {
 	var f *os.File
@@ -50,6 +50,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	mappedData := mmapFile(f)
-	fmt.Printf("File: %s\n%s", os.Args[1], mappedData.d)
+	mappedData := mmapio.MmapFile(f)
+	fmt.Printf("File: %s\n%s", os.Args[1], mappedData.D)
 }
