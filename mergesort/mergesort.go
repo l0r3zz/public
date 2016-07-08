@@ -11,6 +11,39 @@ import (
 	"time"
 )
 
+func mergesort(buffer []int) []int {
+	if len(buffer) <= 1 {
+		return buffer
+	}
+	c := make([]int, len(buffer))
+	a := mergesort(buffer[0 : len(buffer)/2])
+	b := mergesort(buffer[len(buffer)/2:])
+
+	var j int
+	var k int
+
+	for i := range c {
+		if j == len(a) {
+			c[i] = b[k]
+			k++
+			continue
+		}
+		if k == len(b) {
+			c[i] = a[j]
+			j++
+			continue
+		}
+		if a[j] < b[k] {
+			c[i] = a[j]
+			j++
+		} else {
+			c[i] = b[k]
+			k++
+		}
+	}
+	return c
+}
+
 func main() {
 	var f *os.File
 	var err error
@@ -50,9 +83,16 @@ func main() {
 	}
 
 	duration_afteratoi := time.Since(time_programstart)
-
-	fmt.Printf("MMap Operation: %v , Arrary conversion: %v\n",
+	result := mergesort(integers)
+	duration_aftermergesort := time.Since(time_programstart)
+	fmt.Printf("MMap Operation: %v , Arrary conversion: %v Mergesort: %v\n",
 		duration_aftermmap.String(),
-		duration_afteratoi.String())
+		duration_afteratoi.String(),
+		duration_aftermergesort.String())
+	j = result[0]
+	//	fmt.Printf("Integers: \n")
+	//	for i := range result {
+	//		fmt.Printf("%v\n", result[i])
+	//	}
 
 }
