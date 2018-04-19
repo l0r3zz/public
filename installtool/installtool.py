@@ -3,6 +3,7 @@ import argparse
 import sys
 import yaml
 import json
+import pexpect
 
 
 def read_config(av):
