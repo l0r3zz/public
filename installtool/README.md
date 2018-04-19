@@ -16,8 +16,10 @@ optional arguments:
                         If present, directory to get deploy artifacts from
 ```
 
-All installtool configuration files have the following 4 sections
+All installtool configuration files have the following 4 sections:
+```
 hosts:                # Put a list of Hosts that the actions will be applied to
 resources:            # These are files and instaln packabes that live in BLOBDIR
 actions:              # How to do the install
 verify:               # verify that the install was successful
+```
