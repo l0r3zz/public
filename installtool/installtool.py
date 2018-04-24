@@ -20,7 +20,58 @@ import pexpect
 import os
 
 
+#############################   Globals  ######################################
+Debug = False
+###############################################################################
+
+#############################   Class Definitions  ############################
+class Session:
+    """Instantiate a remote ssh session via pexpect and use it to perform all
+    actions"""
+    def __init__(self, ip, uid, usepass=None, key=None, debug=False):
+        self.host = ip
+        self.uid = uid
+        self.passwd = usepass
+        self.sshkey = key
+        self.debug = debug
+        if usepass :
+            self.passwd = usepass
+        elif key :
+            self.sshkey = key
+        try:
+            s = pexpect.pxssh()
+            s.login(self.host, self.uid, self.passwd)
+        except pexpect.pxssh.ExceptionPxssh as e:
+            print("pxssh failed on login")
+            print(e)
+        self.ses = s
+
+###############################################################################
+################# These are debugging helper functions ########################
+
+def pretty_print(obj, ofd=sys.stdout):
+    json.dump(obj, ofd, sort_keys=True, indent=4)
+    ofd.flush()
+
+
+def pretty_prints(str, ofd=sys.stdout):
+    ofd.write("'")
+    json.dump(json.loads(str), ofd, sort_keys=True, indent=4)
+    ofd.write("'")
+    ofd.flush()
+
+
+def std_prints(str, ofd=sys.stdout):
+    ofd.write("'")
+    json.dump(json.loads(str), ofd)
+    ofd.write("'")
+    ofd.flush()
+
+
+###############################################################################
+#############################   main function Definitions  ####################
 def read_config(av):
+    """ Load the config file (runbook)"""
     config_path = av.blobdir+av.file
     if os.path.exists(config_path):
         r = yaml.load(open(config_path))
@@ -30,20 +81,23 @@ def read_config(av):
 
 
 def process_runbook(r):
+    """Perform the r'actions' across all 'hosts' using the supplied 'resources' """
     return 0
 
 
 def main():
     """
-usage: installtool.py [-h] [--file FILE] [--blobdir BLOBDIR]
+    usage: installtool.py [-h] [--file FILE] [--blobdir BLOBDIR] [--debug]
 
-install a site via remote execution
+    install a site via remote execution
 
-optional arguments:
-  -h, --help            show this help message and exit
-  --file FILE, -f FILE  yaml config file
-  --blobdir BLOBDIR, -b BLOBDIR
-                        If present, directory to get deploy artifacts from
+    optional arguments:
+      -h, --help            show this help message and exit
+      --file FILE, -f FILE  yaml config file
+      --blobdir BLOBDIR, -b BLOBDIR
+                            If present, directory to get deploy artifacts from
+      --debug, -d           Enable various debugging output
+
     """
 
     def get_opts():
@@ -53,13 +107,17 @@ optional arguments:
                             help="yaml config file")
         parser.add_argument('--blobdir', "-b", default="./",
                      help="If present, directory to get deploy artifacts from")
+        parser.add_argument('--debug', "-d", action="store_true",
+                     help="Enable various debugging output")
         args = parser.parse_args()
         return args
 
     argv = get_opts()
+    Debug = argv.debug
     runbook = read_config(argv)
     process_runbook(runbook)
-    print(json.dumps(runbook))
+    if Debug :
+        pretty_print(runbook)
     return 0
 
 
