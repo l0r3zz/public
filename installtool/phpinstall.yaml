@@ -9,26 +9,43 @@
 hosts:                # Put a list of Hosts that the actions will be applied to
   -
     ip : localhost
-    user : root
-    password : fubaz
+    user : repair
+    password : fubarbaz
 
   -
-    ip : 209.155.23.3
+    ip : 52.90.0.128
     user : root
-    password : fubaz
+    password : foobarbaz
+
+  -
+    ip : 52.90.128.220
+    user : root
+    password : foobarbaz
+
+  -
+    ip : 54.227.113.247
+    user : root
+    password : foobarbaz
 
 resources:            # These are files and instaln packabes that live in BLOBDIR
-  config :
-    filename : "config0.yaml"
+  hello :
+    type : file-object
+    filename : "hello.php"
     user : "root"
     mode : "755"
-    destination : "/tmp/config.yml"
+    destination : "/tmp/helloworld.php"
   phppkg :
+    type : package-object
     filename : "php5.deb"
     user : "root"
     mode : "755"
     destination : "/usr/local/bin"
 
 actions:              # How to do the install
+  - [ NOP]
+  - [INSTALL, resource: hello]
+  - [isINSTALLED, "resource:phppkg == true", [[NOP]], [[INSTALL, resource: phppkg]]]
+  - [END]
+
 
 verify:               # verify that the install was successful

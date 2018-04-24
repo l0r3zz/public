@@ -17,6 +17,7 @@ import sys
 import yaml
 import json
 import pexpect
+import os
 
 
 def read_config(av):
