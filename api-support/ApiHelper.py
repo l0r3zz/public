@@ -74,3 +74,18 @@ class ApiHelper(object):
 
     def ws_delete(self, url):
         return self.request("DELETE", url)
+
+# How to use it as a superclass
+#class SomeController(ApiHelper.ApiHelper):
+#    '''Object that represents Some Random Controller,
+#    perform API calls and more'''
+#
+#    def __init__(self, host, port=PORT):
+#        # inherit from ApiHelper
+#        super(SomeController, self).__init__(host, port,
+#                                           "/somewhere/rest/gacmd/v1",
+#                                           verify=False)
+#
+#    def some_system_status(self):
+#        return self.ws_get("system/status")
+
