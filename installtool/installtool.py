@@ -81,7 +81,7 @@ def NOP(s,r):
     s.ses.sendline("")
     s.ses.prompt()
     if Debug:
-        print("NOP: ", s.ses.before)
+        print("[%s] NOP: %s" % (s.host, s.ses.before))
         return True
 ###############################################################################
 #############################   main function Definitions  ####################
