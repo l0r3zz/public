@@ -27,7 +27,7 @@ hosts:                # Put a list of Hosts that the actions will be applied to
     user : root
     password : foobarbaz
 
-resources:            # These are files and instaln packabes that live in BLOBDIR
+resources:            # These are files and install packages that live in BLOBDIR
   hello :
     type : file-object
     filename : "hello.php"
@@ -43,7 +43,7 @@ resources:            # These are files and instaln packabes that live in BLOBDI
 
 actions:              # How to do the install
   - [ NOP]
-  - [INSTALL, resource: hello]
+  - [XFER, resource: hello]
   - [isINSTALLED, "resource:phppkg == true", [[NOP]], [[INSTALL, resource: phppkg]]]
   - [END]
 

@@ -98,9 +98,23 @@ def read_config(av):
 def process_runbook(rb):
     """Perform the 'actions' across all 'hosts' using the supplied 'resources'"""
     def xeq(s,rb, action_list):
+        """Execute a list of operations through the provided session with runbook"""
         for op in action_list:
             if op[0] == "NOP":
                 NOP(s, rb)
+                continue
+            elif op[0] == "END":
+                break
+            elif op[0] == "XFER":
+                host = s.host
+                user = s.uid
+                pw = s.passwd
+                file = ""
+                dest = ""
+                xfrcmd = "scp %s %s@%s:%s" % (file, user, host, dest)
+                (output, status) = pexpect.run(xfrcmd, events={'(?i)password':pw})
+                continue
+        return
 
     for host in rb['hosts']:
         session = Session(host['ip'], host['user'], host['password'])
