@@ -7,10 +7,10 @@
 #verify:               # verify that the install was successful
 
 hosts:                # Put a list of Hosts that the actions will be applied to
-  -
-    ip : localhost
-    user : repair
-    password : fubarbaz
+  #  -
+  #  ip : localhost
+  #  user : repair
+  #  password : fubarbaz
 
   -
     ip : 52.90.0.128

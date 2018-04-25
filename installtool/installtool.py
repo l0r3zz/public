@@ -44,7 +44,7 @@ class Session:
             self.sshkey = key
         try:
             s = pxssh.pxssh()
-            s.login(self.host, self.uid, self.passwd)
+            s.login(self.host, self.uid, self.passwd,login_timeout=30)
         except pexpect.pxssh.ExceptionPxssh as e:
             print("pxssh failed on login")
             print(e)
@@ -97,11 +97,14 @@ def read_config(av):
 
 def process_runbook(rb):
     """Perform the 'actions' across all 'hosts' using the supplied 'resources'"""
+    def xeq(s,rb, action_list):
+        for op in action_list:
+            if op[0] == "NOP":
+                NOP(s, rb)
+
     for host in rb['hosts']:
         session = Session(host['ip'], host['user'], host['password'])
-        for op in rb['actions']:
-            if op[0] == "NOP":
-                NOP(session, rb)
+        xeq(session, rb, rb["actions"])
     return 0
 
 
