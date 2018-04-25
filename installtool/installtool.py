@@ -17,6 +17,7 @@ import sys
 import yaml
 import json
 import pexpect
+from pexpect import pxssh
 import os
 
 
@@ -25,6 +26,8 @@ Debug = False
 ###############################################################################
 
 #############################   Class Definitions  ############################
+
+
 class Session:
     """Instantiate a remote ssh session via pexpect and use it to perform all
     actions"""
@@ -34,12 +37,12 @@ class Session:
         self.passwd = usepass
         self.sshkey = key
         self.debug = debug
-        if usepass :
+        if usepass:
             self.passwd = usepass
-        elif key :
+        elif key:
             self.sshkey = key
         try:
-            s = pexpect.pxssh()
+            s = pxssh.pxssh()
             s.login(self.host, self.uid, self.passwd)
         except pexpect.pxssh.ExceptionPxssh as e:
             print("pxssh failed on login")
@@ -48,6 +51,7 @@ class Session:
 
 ###############################################################################
 ################# These are debugging helper functions ########################
+
 
 def pretty_print(obj, ofd=sys.stdout):
     json.dump(obj, ofd, sort_keys=True, indent=4)
@@ -74,14 +78,19 @@ def read_config(av):
     """ Load the config file (runbook)"""
     config_path = av.blobdir+av.file
     if os.path.exists(config_path):
-        r = yaml.load(open(config_path))
+        rb = yaml.load(open(config_path))
     else:
-        r = {}
-    return r
+        rb = {}
+    return rb
 
 
-def process_runbook(r):
-    """Perform the r'actions' across all 'hosts' using the supplied 'resources' """
+def process_runbook(rb):
+    """Perform the 'actions' across all 'hosts' using the supplied 'resources'"""
+    for host in rb['hosts']:
+        session = Session(host['ip'], host['user'], host['password'])
+        session.ses.sendline("uptime")
+        session.ses.prompt()
+        print(session.ses.before)
     return 0
 
 
@@ -116,7 +125,7 @@ def main():
     Debug = argv.debug
     runbook = read_config(argv)
     process_runbook(runbook)
-    if Debug :
+    if Debug:
         pretty_print(runbook)
     return 0
 
