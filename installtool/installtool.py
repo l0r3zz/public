@@ -19,6 +19,7 @@ import json
 import pexpect
 from pexpect import pxssh
 import os
+import inspect
 
 
 #############################   Globals  ######################################
@@ -73,6 +74,16 @@ def std_prints(str, ofd=sys.stdout):
 
 
 ###############################################################################
+#############################   actions operators          ####################
+
+
+def NOP(s,r):
+    s.ses.sendline("")
+    s.ses.prompt()
+    if Debug:
+        print("NOP: ", s.ses.before)
+        return True
+###############################################################################
 #############################   main function Definitions  ####################
 def read_config(av):
     """ Load the config file (runbook)"""
@@ -88,12 +99,13 @@ def process_runbook(rb):
     """Perform the 'actions' across all 'hosts' using the supplied 'resources'"""
     for host in rb['hosts']:
         session = Session(host['ip'], host['user'], host['password'])
-        session.ses.sendline("uptime")
-        session.ses.prompt()
-        print(session.ses.before)
+        for op in rb['actions']:
+            if op[0] == "NOP":
+                NOP(session, rb)
     return 0
 
 
+###############################################################################
 def main():
     """
     usage: installtool.py [-h] [--file FILE] [--blobdir BLOBDIR] [--debug]
@@ -122,6 +134,7 @@ def main():
         return args
 
     argv = get_opts()
+    global Debug
     Debug = argv.debug
     runbook = read_config(argv)
     process_runbook(runbook)

@@ -5,7 +5,7 @@ the philosophy of Ansible. THere are two input components, a configuration file 
 which contains artifacts that will be transferred to the host to be configured:
 
 
-```usage: installtool.py [-h] [--file FILE] [--blobdir BLOBDIR]
+```usage: installtool.py [-h] [--file FILE] [--blobdir BLOBDIR] [--debug]
 
 install a site via remote execution
 
@@ -14,6 +14,8 @@ optional arguments:
   --file FILE, -f FILE  yaml config file
   --blobdir BLOBDIR, -b BLOBDIR
                         If present, directory to get deploy artifacts from
+  --debug, -d           Enable various debugging output
+
 ```
 
 All installtool configuration files have the following 4 sections:
