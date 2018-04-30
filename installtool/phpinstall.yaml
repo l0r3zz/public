@@ -33,7 +33,7 @@ resources:            # These are files and install packages that live in BLOBDI
     filename : "hello.php"
     user : "root"
     mode : "755"
-    destination : "/tmp/helloworld.php"
+    destination : "/var/www/html/hello.php"
   phppkg :
     type : package-object
     filename : "php5.deb"
@@ -42,9 +42,11 @@ resources:            # These are files and install packages that live in BLOBDI
     destination : "/usr/local/bin"
 
 actions:              # How to do the install
-  - [ NOP]
+  - [NOP]
+  - [XEQ, "apt-get --yes update"]
+  - [XEQ, "apt-get --yes install php5-common libapache2-mod-php5 php5-cli"]
   - [XFER, resource: hello]
-  - [isINSTALLED, "resource:phppkg == true", [[NOP]], [[INSTALL, resource: phppkg]]]
+  - [XEQ, "service apache2 stop;service apache2 start"]
   - [END]
 
 

@@ -78,12 +78,34 @@ def std_prints(str, ofd=sys.stdout):
 #############################   actions operators          ####################
 
 
-def NOP(s,r):
+def NOP(s,r,op):
     s.ses.sendline("")
     s.ses.prompt()
     if Debug:
         print("[%s] NOP: %s" % (s.host, s.ses.before))
-        return True
+    return True
+
+def XFER(s,r,op):
+    host = s.host
+    user = s.uid
+    pw = s.passwd
+    res_dict = r["resources"][op[1]["resource"]]
+    file = r["blobdir"] + "/" + res_dict["filename"]
+    dest = res_dict["destination"]
+    xfrcmd = "/usr/bin/scp -q %s %s@%s:%s" % (file, user, host, dest)
+    (output,status) = pexpect.run(xfrcmd,events={"password: ":pw+'\n'},withexitstatus=1)
+    if status :
+        print("XFER: file not transferred")
+    if Debug:
+        print("[%s] XFER: %s status: %s" % (s.host, file, status))
+    return True
+
+def XEQ(s,r,op):
+    s.ses.sendline(op[1])
+    s.ses.prompt()
+    if Debug:
+        print("[%s] XEQ: %s" % (s.host, s.ses.before))
+    return True
 ###############################################################################
 #############################   main function Definitions  ####################
 def read_config(av):
@@ -91,7 +113,7 @@ def read_config(av):
     config_path = av.file
     if os.path.exists(config_path):
         rb = yaml.load(open(config_path))
-        rb["argvec"] = av # for processe that need it
+        rb["blobdir"] = av.blobdir # for processe that need it
     else:
         rb = {}
     return rb
@@ -104,24 +126,15 @@ def process_runbook(rb):
         """Execute a list of operations through the provided session with runbook"""
         for op in action_list:
             if op[0] == "NOP":
-                NOP(s, rb)
+                NOP(s, rb,op)
                 continue
             elif op[0] == "END":
                 break
             elif op[0] == "XFER":
-                host = s.host
-                user = s.uid
-                pw = s.passwd
-                res_dict = rb["resources"][op[1]["resource"]]
-                file = rb["argvec"].blobdir + "/" + res_dict["filename"]
-                dest = res_dict["destination"]
-                xfrcmd = "/usr/bin/scp -q %s %s@%s:%s" % (file, user, host, dest)
-                (output,status) = pexpect.run(xfrcmd,events={"password: ":pw+'\n'},withexitstatus=1)
-                if status :
-                    print("XFER: file not transferred")
-                if Debug:
-                    print("[%s] XFER: %s status:" % (s.host, file, status))
-
+                XFER(s,rb,op)
+                continue
+            elif op[0] == "XEQ":
+                XEQ(s,rb,op)
                 continue
         return
 
