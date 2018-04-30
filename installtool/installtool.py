@@ -106,6 +106,18 @@ def XEQ(s,r,op):
     if Debug:
         print("[%s] XEQ: %s" % (s.host, s.ses.before))
     return True
+
+def CRL(h,op):
+    host = h["ip"]
+    endpoint = op[1]
+    crlcmd = "curl -q -I http://%s/%s" % (host, endpoint)
+    (output,status) = pexpect.run(crlcmd,withexitstatus=1)
+    if status :
+        print("CRL: %s FAIL" % (crlcmd))
+
+    if Debug:
+        print("[%s] CRL: %s status: %s" % (host, output, status))
+    return True
 ###############################################################################
 #############################   main function Definitions  ####################
 def read_config(av):
@@ -138,9 +150,19 @@ def process_runbook(rb):
                 continue
         return
 
+
+    def vfy(h, action_list):
+        for op in action_list:
+            if op[0] == "CRL":
+                CRL(h,op)
+                continue
+        return
+
     for host in rb['hosts']:
         session = Session(host['ip'], host['user'], host['password'])
         xeq(session, rb, rb["actions"])
+    for host in rb['hosts']:
+        vfy(host, rb["verify"])
     return 0
 
 

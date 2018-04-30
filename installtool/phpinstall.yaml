@@ -34,12 +34,6 @@ resources:            # These are files and install packages that live in BLOBDI
     user : "root"
     mode : "755"
     destination : "/var/www/html/hello.php"
-  phppkg :
-    type : package-object
-    filename : "php5.deb"
-    user : "root"
-    mode : "755"
-    destination : "/usr/local/bin"
 
 actions:              # How to do the install
   - [NOP]
@@ -51,3 +45,4 @@ actions:              # How to do the install
 
 
 verify:               # verify that the install was successful
+  - [CRL, "hello.php"]
