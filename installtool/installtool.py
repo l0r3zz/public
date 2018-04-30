@@ -127,7 +127,8 @@ def read_config(av):
     config_path = av.file
     if os.path.exists(config_path):
         rb = yaml.load(open(config_path))
-        rb["blobdir"] = av.blobdir # for processe that need it
+        rb["blobdir"] = av.blobdir # for processes that need it
+        rb["verify-only"] = av.verify # for processes that need it
     else:
         rb = {}
     return rb
@@ -161,13 +162,15 @@ def process_runbook(rb):
                 continue
         return
 
-    print("Remediating Hosts")
-    for host in rb['hosts']:
-        session = Session(host['ip'], host['user'], host['password'])
-        xeq(session, rb, rb["actions"])
-    print("Verifying Hosts")
-    for host in rb['hosts']:
-        vfy(host, rb["verify"])
+    if not rb["verify-only"]:
+        print("Remediating Hosts")
+        for host in rb['hosts']:
+            session = Session(host['ip'], host['user'], host['password'])
+            xeq(session, rb, rb["actions"])
+    else:
+        print("Verifying Hosts")
+        for host in rb['hosts']:
+            vfy(host, rb["verify"])
     return 0
 
 
@@ -175,16 +178,7 @@ def process_runbook(rb):
 def main():
     """
     usage: installtool.py [-h] [--file FILE] [--blobdir BLOBDIR] [--debug]
-
-    install a site via remote execution
-
-    optional arguments:
-      -h, --help            show this help message and exit
-      --file FILE, -f FILE  yaml config file
-      --blobdir BLOBDIR, -b BLOBDIR
-                            If present, directory to get deploy artifacts from
-      --debug, -d           Enable various debugging output
-
+                      [--verify]
     """
 
     def get_opts():
@@ -196,6 +190,8 @@ def main():
                      help="If present, directory to get deploy artifacts from")
         parser.add_argument('--debug', "-d", action="store_true",
                      help="Enable various debugging output")
+        parser.add_argument('--verify', "-v", action="store_true",
+                     help="Perform only the verification actions on the host list")
         args = parser.parse_args()
         return args
 
