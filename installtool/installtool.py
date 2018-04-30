@@ -112,6 +112,8 @@ def CRL(h,op):
     endpoint = op[1]
     crlcmd = "curl -q -I http://%s/%s" % (host, endpoint)
     (output,status) = pexpect.run(crlcmd,withexitstatus=1)
+    status_line = str(output.splitlines()[0])
+    print("[%s]:%s" % (host,status_line))
     if status :
         print("CRL: %s FAIL" % (crlcmd))
 
@@ -148,6 +150,7 @@ def process_runbook(rb):
             elif op[0] == "XEQ":
                 XEQ(s,rb,op)
                 continue
+        print("[%s]" % (s.host))
         return
 
 
@@ -158,9 +161,11 @@ def process_runbook(rb):
                 continue
         return
 
+    print("Remediating Hosts")
     for host in rb['hosts']:
         session = Session(host['ip'], host['user'], host['password'])
         xeq(session, rb, rb["actions"])
+    print("Verifying Hosts")
     for host in rb['hosts']:
         vfy(host, rb["verify"])
     return 0
