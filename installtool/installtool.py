@@ -20,6 +20,7 @@ import pexpect
 from pexpect import pxssh
 import os
 import inspect
+import re
 
 
 #############################   Globals  ######################################
@@ -87,9 +88,10 @@ def NOP(s,r):
 #############################   main function Definitions  ####################
 def read_config(av):
     """ Load the config file (runbook)"""
-    config_path = av.blobdir+av.file
+    config_path = av.file
     if os.path.exists(config_path):
         rb = yaml.load(open(config_path))
+        rb["argvec"] = av # for processe that need it
     else:
         rb = {}
     return rb
@@ -97,6 +99,7 @@ def read_config(av):
 
 def process_runbook(rb):
     """Perform the 'actions' across all 'hosts' using the supplied 'resources'"""
+
     def xeq(s,rb, action_list):
         """Execute a list of operations through the provided session with runbook"""
         for op in action_list:
@@ -109,10 +112,16 @@ def process_runbook(rb):
                 host = s.host
                 user = s.uid
                 pw = s.passwd
-                file = ""
-                dest = ""
-                xfrcmd = "scp %s %s@%s:%s" % (file, user, host, dest)
-                (output, status) = pexpect.run(xfrcmd, events={'(?i)password':pw})
+                res_dict = rb["resources"][op[1]["resource"]]
+                file = rb["argvec"].blobdir + "/" + res_dict["filename"]
+                dest = res_dict["destination"]
+                xfrcmd = "/usr/bin/scp -q %s %s@%s:%s" % (file, user, host, dest)
+                (output,status) = pexpect.run(xfrcmd,events={"password: ":pw+'\n'},withexitstatus=1)
+                if status :
+                    print("XFER: file not transferred")
+                if Debug:
+                    print("[%s] XFER: %s status:" % (s.host, file, status))
+
                 continue
         return
 
@@ -143,7 +152,7 @@ def main():
             description="install a site via remote execution")
         parser.add_argument('--file', "-f", default="-",
                             help="yaml config file")
-        parser.add_argument('--blobdir', "-b", default="./",
+        parser.add_argument('--blobdir', "-b", default=".",
                      help="If present, directory to get deploy artifacts from")
         parser.add_argument('--debug', "-d", action="store_true",
                      help="Enable various debugging output")
