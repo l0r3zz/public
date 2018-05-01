@@ -167,10 +167,9 @@ def process_runbook(rb):
         for host in rb['hosts']:
             session = Session(host['ip'], host['user'], host['password'])
             xeq(session, rb, rb["actions"])
-    else:
-        print("Verifying Hosts")
-        for host in rb['hosts']:
-            vfy(host, rb["verify"])
+    print("Verifying Hosts")
+    for host in rb['hosts']:
+        vfy(host, rb["verify"])
     return 0
 
 
