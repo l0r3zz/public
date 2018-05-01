@@ -7,7 +7,8 @@ which contains artifacts that will be transferred to the host to be configured b
 This tool requires Python 3, the pexpect, yaml, json and inspect libraries
 
 
-```usage: installtool.py [-h] [--file FILE] [--blobdir BLOBDIR] [--debug]
+```
+usage: installtool.py [-h] [--file FILE] [--blobdir BLOBDIR] [--debug]
                       [--verify]
 
 install a site via remote execution
