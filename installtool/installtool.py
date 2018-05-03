@@ -19,8 +19,6 @@ import json
 import pexpect
 from pexpect import pxssh
 import os
-import inspect
-import re
 
 
 #############################   Globals  ######################################
@@ -45,7 +43,7 @@ class Session:
             self.sshkey = key
         try:
             s = pxssh.pxssh()
-            s.login(self.host, self.uid, self.passwd,login_timeout=30)
+            s.login(self.host, self.uid, self.passwd, login_timeout=30)
         except pexpect.pxssh.ExceptionPxssh as e:
             print("pxssh failed on login")
             print(e)
@@ -77,7 +75,6 @@ def std_prints(str, ofd=sys.stdout):
 ###############################################################################
 #############################   actions operators          ####################
 
-
 def NOP(s,r,op):
     s.ses.sendline("")
     s.ses.prompt()
@@ -100,6 +97,15 @@ def XFER(s,r,op):
         print("[%s] XFER: %s status: %s" % (s.host, file, status))
     return True
 
+def XREM(s,r,op):
+    res_dict = r["resources"][op[1]["resource"]]
+    target = res_dict["destination"]
+    s.ses.sendline("rm -f %s" % (target))
+    s.ses.prompt()
+    if Debug:
+        print("[%s] XREM: %s" % (s.host, s.ses.before))
+    return True
+
 def XEQ(s,r,op):
     s.ses.sendline(op[1])
     s.ses.prompt()
@@ -110,9 +116,11 @@ def XEQ(s,r,op):
 def CRL(h,op):
     host = h["ip"]
     endpoint = op[1]
-    crlcmd = "curl -q -I http://%s/%s" % (host, endpoint)
+    crlcmd = "curl -q -i http://%s/%s" % (host, endpoint)
     (output,status) = pexpect.run(crlcmd,withexitstatus=1)
-    status_line = str(output.splitlines()[0])
+    str_output = output.translate(None, b'/r')  #remove the \r
+    status_line = (str_output.splitlines()[0].decode("utf-8")
+                   + " / " + str_output.splitlines()[14].decode("utf-8"))
     print("[%s]:%s" % (host,status_line))
     if status :
         print("CRL: %s FAIL" % (crlcmd))
@@ -147,6 +155,9 @@ def process_runbook(rb):
                 break
             elif op[0] == "XFER":
                 XFER(s,rb,op)
+                continue
+            elif op[0] == "XREM":
+                XREM(s,rb,op)
                 continue
             elif op[0] == "XEQ":
                 XEQ(s,rb,op)

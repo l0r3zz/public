@@ -33,16 +33,32 @@ resources:            # These are files and install packages that live in BLOBDI
     filename : "hello.php"
     user : "root"
     mode : "755"
-    destination : "/var/www/html/hello.php"
+    destination : "/var/www/html/index.php"
+
+  indexhtml :
+    type : file-object
+    filename : "index.html"
+    user : "root"
+    mode : "755"
+    destination : "/var/www/html/index.html"
+
+  htaccess :
+    type : file-object
+    filename : "htaccess"
+    user : "root"
+    mode : "700"
+    destination : "/var/www/html/.htaccess"
 
 actions:              # How to do the install
   - [NOP]
   - [XEQ, "apt-get --yes update"]
   - [XEQ, "apt-get --yes install php5-common libapache2-mod-php5 php5-cli"]
   - [XFER, resource: hello]
-  - [XEQ, "service apache2 stop;service apache2 start"]
+  - [XFER, resource: htaccess]
+  - [XREM, resource: indexhtml]
+  - [XEQ, "service apache2 restart"]
   - [END]
 
 
 verify:               # verify that the install was successful
-  - [CRL, "hello.php"]
+  - [CRL, "/"]
