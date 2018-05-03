@@ -118,9 +118,8 @@ def CRL(h,op):
     endpoint = op[1]
     crlcmd = "curl -q -i http://%s/%s" % (host, endpoint)
     (output,status) = pexpect.run(crlcmd,withexitstatus=1)
-    str_output = output.translate(None, b'/r')  #remove the \r
-    status_line = (str_output.splitlines()[0].decode("utf-8")
-                   + " / " + str_output.splitlines()[14].decode("utf-8"))
+    status_line = (output.splitlines()[0].decode("utf-8")
+                   + " / " + output.splitlines()[14].decode("utf-8"))
     print("[%s]:%s" % (host,status_line))
     if status :
         print("CRL: %s FAIL" % (crlcmd))
