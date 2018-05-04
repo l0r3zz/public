@@ -72,7 +72,7 @@ class InstalltoolOps:
         except KeyError :
             print("Installtool: Operator %s not found, ignoring" % (op[0]))
             return False
-        eval_cmd = "self.%s(s,r,op)" % op_spec
+        eval_cmd = "self.%s(s,r,op)" % op[0]
         result = eval(eval_cmd)
         return result
 
@@ -115,6 +115,13 @@ class InstalltoolOps:
         if Debug:
             print("[%s] XEQ: %s" % (s.host, s.ses.before))
         return True
+
+    def END(self,s,r,op):
+        s.ses.sendline("")
+        s.ses.prompt()
+        if Debug:
+            print("[%s] END: %s" % (s.host, s.ses.before))
+        return False
 
 ###############################################################################
 ################# These are debugging helper functions ########################
@@ -176,22 +183,9 @@ def process_runbook(rb):
     def xeq(s,rb, action_list):
         """Execute a list of operations through the provided session with runbook"""
         thread = InstalltoolOps()
-#        thread._xeq_op(s,rb,op)
         for op in action_list:
-            if op[0] == "NOP":
-                thread.NOP(s, rb,op)
-                continue
-            elif op[0] == "END":
+            if not thread._xeq_op(s,rb,op):
                 break
-            elif op[0] == "XFER":
-                thread.XFER(s,rb,op)
-                continue
-            elif op[0] == "XREM":
-                thread.XREM(s,rb,op)
-                continue
-            elif op[0] == "XEQ":
-                thread.XEQ(s,rb,op)
-                continue
         print("[%s]" % (s.host))
         return
 
