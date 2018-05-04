@@ -147,7 +147,7 @@ def std_prints(str, ofd=sys.stdout):
 
 
 ###############################################################################
-#############################   actions operators          ####################
+#############################   verify operators           ####################
 
 def CRL(h,rb,op):
     host = h["ip"]
@@ -191,6 +191,7 @@ def process_runbook(rb):
 
 
     def vfy(h, rb, action_list):
+        """Execute a list of verification steps on localhost in the runbook"""
         for op in action_list:
             if op[0] == "CRL":
                 CRL(h,rb,op)
