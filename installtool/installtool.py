@@ -19,6 +19,7 @@ import json
 import pexpect
 from pexpect import pxssh
 import os
+import inspect
 
 
 #############################   Globals  ######################################
@@ -49,6 +50,72 @@ class Session:
             print(e)
         self.ses = s
 
+class InstalltoolOps:
+    """ Class to hold all action operators so that we can leverage inspect"""
+    def __init__(self):
+        self.func_dict = {}
+        for func in dir(self) :
+            if not func.startswith('_') and eval(
+                ("hasattr( self.%s,'__call__')") % func):
+                self.func_dict[func] = eval(
+                    "inspect.getargspec(self.%s)" % func )
+
+    def _xeq_op(self,s, r, op):
+        """ This is the internl execution function that allows us to do away
+        with the if-elif tree in the upstream xeq function. It is not enumerated
+        by __init__ when the function table is created.  This allows for the easy
+        extension of user exposed functionality by just adding new functions
+        to this Class.
+        """
+        try:
+            op_spec = self.func_dict[op[0]]
+        except KeyError :
+            print("Installtool: Operator %s not found, ignoring" % (op[0]))
+            return False
+        eval_cmd = "self.%s(s,r,op)" % op_spec
+        result = eval(eval_cmd)
+        return result
+
+    def NOP(self,s,r,op):
+        s.ses.sendline("")
+        s.ses.prompt()
+        if Debug:
+            print("[%s] NOP: %s" % (s.host, s.ses.before))
+        return True
+
+    def XFER(self,s,r,op):
+        host = s.host
+        user = s.uid
+        pw = s.passwd
+        res_dict = r["resources"][op[1]["resource"]]
+        file = r["blobdir"] + "/" + res_dict["filename"]
+        dest = res_dict["destination"]
+        xfrcmd = "/usr/bin/scp -q %s %s@%s:%s" % (file, user, host, dest)
+        (output,status) = pexpect.run(xfrcmd,
+                                      events={"password: ":pw+'\n'},
+                                      withexitstatus=1)
+        if status :
+            print("XFER: file not transferred")
+        if Debug:
+            print("[%s] XFER: %s status: %s" % (s.host, file, status))
+        return True
+
+    def XREM(self,s,r,op):
+        res_dict = r["resources"][op[1]["resource"]]
+        target = res_dict["destination"]
+        s.ses.sendline("rm -f %s" % (target))
+        s.ses.prompt()
+        if Debug:
+            print("[%s] XREM: %s" % (s.host, s.ses.before))
+        return True
+
+    def XEQ(self,s,r,op):
+        s.ses.sendline(op[1])
+        s.ses.prompt()
+        if Debug:
+            print("[%s] XEQ: %s" % (s.host, s.ses.before))
+        return True
+
 ###############################################################################
 ################# These are debugging helper functions ########################
 
@@ -75,45 +142,7 @@ def std_prints(str, ofd=sys.stdout):
 ###############################################################################
 #############################   actions operators          ####################
 
-def NOP(s,r,op):
-    s.ses.sendline("")
-    s.ses.prompt()
-    if Debug:
-        print("[%s] NOP: %s" % (s.host, s.ses.before))
-    return True
-
-def XFER(s,r,op):
-    host = s.host
-    user = s.uid
-    pw = s.passwd
-    res_dict = r["resources"][op[1]["resource"]]
-    file = r["blobdir"] + "/" + res_dict["filename"]
-    dest = res_dict["destination"]
-    xfrcmd = "/usr/bin/scp -q %s %s@%s:%s" % (file, user, host, dest)
-    (output,status) = pexpect.run(xfrcmd,events={"password: ":pw+'\n'},withexitstatus=1)
-    if status :
-        print("XFER: file not transferred")
-    if Debug:
-        print("[%s] XFER: %s status: %s" % (s.host, file, status))
-    return True
-
-def XREM(s,r,op):
-    res_dict = r["resources"][op[1]["resource"]]
-    target = res_dict["destination"]
-    s.ses.sendline("rm -f %s" % (target))
-    s.ses.prompt()
-    if Debug:
-        print("[%s] XREM: %s" % (s.host, s.ses.before))
-    return True
-
-def XEQ(s,r,op):
-    s.ses.sendline(op[1])
-    s.ses.prompt()
-    if Debug:
-        print("[%s] XEQ: %s" % (s.host, s.ses.before))
-    return True
-
-def CRL(h,op):
+def CRL(h,rb,op):
     host = h["ip"]
     endpoint = op[1]
     crlcmd = "curl -q -i http://%s/%s" % (host, endpoint)
@@ -146,29 +175,31 @@ def process_runbook(rb):
 
     def xeq(s,rb, action_list):
         """Execute a list of operations through the provided session with runbook"""
+        thread = InstalltoolOps()
+#        thread._xeq_op(s,rb,op)
         for op in action_list:
             if op[0] == "NOP":
-                NOP(s, rb,op)
+                thread.NOP(s, rb,op)
                 continue
             elif op[0] == "END":
                 break
             elif op[0] == "XFER":
-                XFER(s,rb,op)
+                thread.XFER(s,rb,op)
                 continue
             elif op[0] == "XREM":
-                XREM(s,rb,op)
+                thread.XREM(s,rb,op)
                 continue
             elif op[0] == "XEQ":
-                XEQ(s,rb,op)
+                thread.XEQ(s,rb,op)
                 continue
         print("[%s]" % (s.host))
         return
 
 
-    def vfy(h, action_list):
+    def vfy(h, rb, action_list):
         for op in action_list:
             if op[0] == "CRL":
-                CRL(h,op)
+                CRL(h,rb,op)
                 continue
         return
 
@@ -179,7 +210,7 @@ def process_runbook(rb):
             xeq(session, rb, rb["actions"])
     print("Verifying Hosts")
     for host in rb['hosts']:
-        vfy(host, rb["verify"])
+        vfy(host, rb, rb["verify"])
     return 0
 
 
