@@ -20,6 +20,7 @@ import pexpect
 from pexpect import pxssh
 import os
 import inspect
+import concurrent.futures
 
 
 #############################   Globals  ######################################
@@ -171,6 +172,7 @@ def read_config(av):
     if os.path.exists(config_path):
         rb = yaml.load(open(config_path))
         rb["blobdir"] = av.blobdir # for processes that need it
+        rb["threads"] = av.threads # for processes that need it
         rb["verify-only"] = av.verify # for processes that need it
     else:
         rb = {}
@@ -198,11 +200,18 @@ def process_runbook(rb):
                 continue
         return
 
+    def thrd(host):
+        session = Session(host['ip'], host['user'], host['password'])
+        xeq(session, rb, rb["actions"])
+
     if not rb["verify-only"]:
         print("Remediating Hosts")
-        for host in rb['hosts']:
-            session = Session(host['ip'], host['user'], host['password'])
-            xeq(session, rb, rb["actions"])
+        with concurrent.futures.ThreadPoolExecutor(max_workers=rb["threads"]) as pool:
+            thread_results = list(pool.map(thrd,rb["hosts"]))
+#        for host in rb['hosts']:
+#            session = Session(host['ip'], host['user'], host['password'])
+#            xeq(session, rb, rb["actions"])
+#            thrd(host)
     print("Verifying Hosts")
     for host in rb['hosts']:
         vfy(host, rb, rb["verify"])
@@ -227,6 +236,8 @@ def main():
                      help="Enable various debugging output")
         parser.add_argument('--verify', "-v", action="store_true",
                      help="Perform only the verification actions on the host list")
+        parser.add_argument('--threads', "-t", type=int, default=1,
+                     help="perform host actions with M concurrent threads")
         args = parser.parse_args()
         return args
 
