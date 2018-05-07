@@ -46,7 +46,7 @@ class Session:
         try:
             s = pxssh.pxssh()
             s.login(self.host, self.uid, password=self.passwd,
-                    sh_key=self.sshkey, login_timeout=30)
+                    ssh_key=self.sshkey, login_timeout=30)
         except pexpect.pxssh.ExceptionPxssh as e:
             print("pxssh failed on login")
             print(e)
@@ -206,8 +206,8 @@ def process_runbook(rb):
             session = Session(host['ip'], host['user'], password=host['password'])
         elif "sshkey" in host:
             key_resource = host["sshkey"]["resource"]
-            keyfile = rb["resources"][key_resource]["filename"]
-            session = Session(host['ip'], host['user'], ssh_key=keyfile)
+            keyfile = rb["blobdir"] + "/" + rb["resources"][key_resource]["filename"]
+            session = Session(host['ip'], host['user'], key=keyfile)
         else:
             print("[%s]: No account authentication method provided" % host["ip"])
             return
