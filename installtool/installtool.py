@@ -45,7 +45,8 @@ class Session:
             self.sshkey = key
         try:
             s = pxssh.pxssh()
-            s.login(self.host, self.uid, self.passwd, login_timeout=30)
+            s.login(self.host, self.uid, password=self.passwd,
+                    sh_key=self.sshkey, login_timeout=30)
         except pexpect.pxssh.ExceptionPxssh as e:
             print("pxssh failed on login")
             print(e)
@@ -201,17 +202,21 @@ def process_runbook(rb):
         return
 
     def thrd(host):
-        session = Session(host['ip'], host['user'], host['password'])
+        if "password" in host:
+            session = Session(host['ip'], host['user'], password=host['password'])
+        elif "sshkey" in host:
+            key_resource = host["sshkey"]["resource"]
+            keyfile = rb["resources"][key_resource]["filename"]
+            session = Session(host['ip'], host['user'], ssh_key=keyfile)
+        else:
+            print("[%s]: No account authentication method provided" % host["ip"])
+            return
         xeq(session, rb, rb["actions"])
 
     if not rb["verify-only"]:
         print("Remediating Hosts")
         with concurrent.futures.ThreadPoolExecutor(max_workers=rb["threads"]) as pool:
             thread_results = list(pool.map(thrd,rb["hosts"]))
-#        for host in rb['hosts']:
-#            session = Session(host['ip'], host['user'], host['password'])
-#            xeq(session, rb, rb["actions"])
-#            thrd(host)
     print("Verifying Hosts")
     for host in rb['hosts']:
         vfy(host, rb, rb["verify"])

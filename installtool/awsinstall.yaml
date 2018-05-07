@@ -15,17 +15,17 @@ hosts:                # Put a list of Hosts that the actions will be applied to
   -
     ip : 54.200.214.130
     user : ubuntu
-    key : { resource: roguekey}
+    sshkey : { resource: roguekey}
 
   -
     ip : 54.187.133.18
     user : ubuntu
-    key : { resource: roguekey}
+    sshkey : { resource: roguekey}
 
   -
     ip : 54.244.14.204
     user : ubuntu
-    key : { resource: roguekey}
+    sshkey : { resource: roguekey}
 
 resources:            # These are files and install packages that live in BLOBDIR
   hello :
