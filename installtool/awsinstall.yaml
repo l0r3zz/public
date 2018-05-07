@@ -1,0 +1,68 @@
+%TAG !! tag:ambientnetworks.net,2018:
+---
+# All installtool configuration files have the following 4 sections
+#hosts:                # Put a list of Hosts that the actions will be applied to
+#resources:            # These are files and instaln packabes that live in BLOBDIR
+#actions:              # How to do the install
+#verify:               # verify that the install was successful
+
+hosts:                # Put a list of Hosts that the actions will be applied to
+  #  -
+  #  ip : localhost
+  #  user : repair
+  #  password : fubarbaz
+
+  -
+    ip : 54.200.214.130
+    user : ubuntu
+    key : { resource: roguekey}
+
+  -
+    ip : 54.187.133.18
+    user : ubuntu
+    key : { resource: roguekey}
+
+  -
+    ip : 54.244.14.204
+    user : ubuntu
+    key : { resource: roguekey}
+
+resources:            # These are files and install packages that live in BLOBDIR
+  hello :
+    type : file-object
+    filename : "hello.php"
+    user : "root"
+    mode : "755"
+    destination : "/var/www/html/index.php"
+
+  indexhtml :
+    type : file-object
+    filename : "index.html"
+    user : "root"
+    mode : "755"
+    destination : "/var/www/html/index.html"
+
+  htaccess :
+    type : file-object
+    filename : "htaccess"
+    user : "root"
+    mode : "700"
+    destination : "/var/www/html/.htaccess"
+
+  roguekey :
+    type : key-object
+    filename : "roguekey.pem"
+
+actions:              # How to do the install
+  - [NOP]
+  - [XEQ, "apt-get --yes update"]
+  - [XEQ, "apt-get --yes install php5-common libapache2-mod-php5 php5-cli"]
+  - [XFER, resource: hello]
+  - [XFER, resource: htaccess]
+  - [XREM, resource: indexhtml]
+  - [XEQ, "service apache2 restart"]
+  - [END]
+
+
+verify:               # verify that the install was successful
+  - [CRL, "/"]
