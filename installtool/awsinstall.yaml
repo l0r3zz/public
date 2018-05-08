@@ -59,11 +59,12 @@ resources:            # These are files and install packages that live in BLOBDI
 actions:              # How to do the install
   - [NOP]
   - [XEQ, "sudo apt-get --yes update"]
-  - [XEQ, "sudo apt-get --yes install php5-common libapache2-mod-php5 php5-cli"]
+  - [XEQ, "sudo apt-get --yes install apache2 php libapache2-mod-php php-cli"]
+  - [XEQ, 'sudo ufw allow in "Apache Full"']
   - [XFER, resource: hello]
   - [XFER, resource: htaccess]
   - [XREM, resource: indexhtml]
-  - [XEQ, "sudo service apache2 restart"]
+  - [XEQ, "sudo systemctl restart apache2"]
   - [END]
 
 

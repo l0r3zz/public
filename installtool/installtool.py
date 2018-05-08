@@ -45,7 +45,7 @@ class Session:
             self.sshkey = key
         try:
             s = pxssh.pxssh()
-            s.login(self.host, self.uid, password=self.passwd,
+            s.login(self.host, self.uid, self.passwd,
                     ssh_key=self.sshkey, login_timeout=30)
         except pexpect.pxssh.ExceptionPxssh as e:
             print("pxssh failed on login")
@@ -120,7 +120,10 @@ class InstalltoolOps:
     def XREM(self,s,r,op):
         res_dict = r["resources"][op[1]["resource"]]
         target = res_dict["destination"]
-        s.ses.sendline("rm -f %s" % (target))
+        if s.passwd:
+            s.ses.sendline("rm -f %s" % (target))
+        elif s.sshkey:
+            s.ses.sendline("sudo rm -f %s" % (target))
         s.ses.prompt()
         if Debug:
             print("[%s] XREM: %s" % (s.host, s.ses.before))
@@ -172,7 +175,7 @@ def CRL(h,rb,op):
     crlcmd = "curl -q -i http://%s/%s" % (host, endpoint)
     (output,status) = pexpect.run(crlcmd,withexitstatus=1)
     status_line = (output.splitlines()[0].decode("utf-8")
-                   + " / " + output.splitlines()[14].decode("utf-8"))
+                   + " / " + output.splitlines()[-1].decode("utf-8"))
     print("[%s]:%s" % (host,status_line))
     if status :
         print("CRL: %s FAIL" % (crlcmd))
@@ -218,7 +221,7 @@ def process_runbook(rb):
 
     def thrd(host):
         if "password" in host:
-            session = Session(host['ip'], host['user'], password=host['password'])
+            session = Session(host['ip'], host['user'], host['password'])
         elif "sshkey" in host:
             key_resource = host["sshkey"]["resource"]
             keyfile = rb["blobdir"] + "/" + rb["resources"][key_resource]["filename"]
@@ -230,10 +233,16 @@ def process_runbook(rb):
 
     if not rb["verify-only"]:
         print("Remediating Hosts")
-#        with concurrent.futures.ThreadPoolExecutor(max_workers=rb["threads"]) as pool:
-#            thread_results = list(pool.map(thrd,rb["hosts"]))
-        for host in rb["hosts"]:
-            thrd(host)
+        # If you use the "-t" flag, hosts remediation will be done in parallel
+        # using NUM threads where -t NUM is specified, else hosts are processed
+        # sequentially.
+        if rb["threads"]:
+            with concurrent.futures.ThreadPoolExecutor(max_workers=rb["threads"]) as pool:
+                thread_results = list(pool.map(thrd,rb["hosts"]))
+        else:
+            for host in rb["hosts"]:
+                thrd(host)
+
     print("Verifying Hosts")
     for host in rb['hosts']:
         vfy(host, rb, rb["verify"])
@@ -258,7 +267,7 @@ def main():
                      help="Enable various debugging output")
         parser.add_argument('--verify', "-v", action="store_true",
                      help="Perform only the verification actions on the host list")
-        parser.add_argument('--threads', "-t", type=int, default=1,
+        parser.add_argument('--threads', "-t", type=int, default=0,
                      help="perform host actions with M concurrent threads")
         args = parser.parse_args()
         return args
