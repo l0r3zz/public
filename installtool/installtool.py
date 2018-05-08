@@ -89,15 +89,30 @@ class InstalltoolOps:
         host = s.host
         user = s.uid
         pw = s.passwd
+        key = s.sshkey
         res_dict = r["resources"][op[1]["resource"]]
         file = r["blobdir"] + "/" + res_dict["filename"]
         dest = res_dict["destination"]
-        xfrcmd = "/usr/bin/scp -q %s %s@%s:%s" % (file, user, host, dest)
-        (output,status) = pexpect.run(xfrcmd,
-                                      events={"password: ":pw+'\n'},
-                                      withexitstatus=1)
+        if "installdir" in res_dict:
+            target = res_dict["installdir"]
+        else:
+            target = res_dict["destination"]
+        if s.passwd:
+            xfrcmd = "/usr/bin/scp -q %s %s@%s:%s" % (file, user, host, target)
+            (output,status) = pexpect.run(xfrcmd,
+                                          events={"password: ":pw+'\n'},
+                                          withexitstatus=1)
+        elif s.sshkey:
+            xfrcmd = "/usr/bin/scp -q -i %s %s %s@%s:%s" % (key, file, user, host, target)
+            (output,status) = pexpect.run(xfrcmd, withexitstatus=1)
         if status :
             print("XFER: file not transferred")
+        if "installdir" in res_dict:
+            # if not root, we have to scp then move it into place
+            installfile = target + "/" + res_dict["filename"]
+            mvop =[ "XEQ", "cmd"]
+            mvop[1] = "sudo mv %s %s" % (installfile,  dest)
+            self.XEQ(s,r,mvop)
         if Debug:
             print("[%s] XFER: %s status: %s" % (s.host, file, status))
         return True
@@ -215,8 +230,10 @@ def process_runbook(rb):
 
     if not rb["verify-only"]:
         print("Remediating Hosts")
-        with concurrent.futures.ThreadPoolExecutor(max_workers=rb["threads"]) as pool:
-            thread_results = list(pool.map(thrd,rb["hosts"]))
+#        with concurrent.futures.ThreadPoolExecutor(max_workers=rb["threads"]) as pool:
+#            thread_results = list(pool.map(thrd,rb["hosts"]))
+        for host in rb["hosts"]:
+            thrd(host)
     print("Verifying Hosts")
     for host in rb['hosts']:
         vfy(host, rb, rb["verify"])

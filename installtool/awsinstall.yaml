@@ -33,6 +33,7 @@ resources:            # These are files and install packages that live in BLOBDI
     filename : "hello.php"
     user : "root"
     mode : "755"
+    installdir : "."
     destination : "/var/www/html/index.php"
 
   indexhtml :
@@ -40,6 +41,7 @@ resources:            # These are files and install packages that live in BLOBDI
     filename : "index.html"
     user : "root"
     mode : "755"
+    installdir : "."
     destination : "/var/www/html/index.html"
 
   htaccess :
@@ -47,6 +49,7 @@ resources:            # These are files and install packages that live in BLOBDI
     filename : "htaccess"
     user : "root"
     mode : "700"
+    installdir : "."
     destination : "/var/www/html/.htaccess"
 
   roguekey :
@@ -55,12 +58,12 @@ resources:            # These are files and install packages that live in BLOBDI
 
 actions:              # How to do the install
   - [NOP]
-  - [XEQ, "apt-get --yes update"]
-  - [XEQ, "apt-get --yes install php5-common libapache2-mod-php5 php5-cli"]
+  - [XEQ, "sudo apt-get --yes update"]
+  - [XEQ, "sudo apt-get --yes install php5-common libapache2-mod-php5 php5-cli"]
   - [XFER, resource: hello]
   - [XFER, resource: htaccess]
   - [XREM, resource: indexhtml]
-  - [XEQ, "service apache2 restart"]
+  - [XEQ, "sudo service apache2 restart"]
   - [END]
 
 
