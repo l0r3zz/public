@@ -93,6 +93,10 @@ class InstalltoolOps:
         res_dict = r["resources"][op[1]["resource"]]
         file = r["blobdir"] + "/" + res_dict["filename"]
         dest = res_dict["destination"]
+        if len(op) >2:
+            to = int(op[2])
+        else:
+            to = 30
         if "installdir" in res_dict:
             target = res_dict["installdir"]
         else:
@@ -101,10 +105,10 @@ class InstalltoolOps:
             xfrcmd = "/usr/bin/scp -q %s %s@%s:%s" % (file, user, host, target)
             (output,status) = pexpect.run(xfrcmd,
                                           events={"password: ":pw+'\n'},
-                                          withexitstatus=1)
+                                          timeout=to, withexitstatus=1)
         elif s.sshkey:
             xfrcmd = "/usr/bin/scp -q -i %s %s %s@%s:%s" % (key, file, user, host, target)
-            (output,status) = pexpect.run(xfrcmd, withexitstatus=1)
+            (output,status) = pexpect.run(xfrcmd, timeout=to,  withexitstatus=1)
         if status :
             print("XFER: file not transferred")
         if "installdir" in res_dict:
@@ -203,16 +207,18 @@ def process_runbook(rb):
 
     def xeq(s,rb, action_list):
         """Execute a list of operations through the provided session with runbook"""
+        print("[%s]" % (s.host))
         thread = InstalltoolOps()
         for op in action_list:
             if not thread._xeq_op(s,rb,op):
                 break
-        print("[%s]" % (s.host))
         return
 
 
     def vfy(h, rb, action_list):
         """Execute a list of verification steps on localhost in the runbook"""
+        if not action_list:
+            return
         for op in action_list:
             if op[0] == "CRL":
                 CRL(h,rb,op)
