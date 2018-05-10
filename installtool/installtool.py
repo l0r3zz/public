@@ -134,8 +134,12 @@ class InstalltoolOps:
         return True
 
     def XEQ(self,s,r,op):
+        if len(op) >2:
+            to = int(op[2])
+        else:
+            to = 30
         s.ses.sendline(op[1])
-        s.ses.prompt()
+        s.ses.prompt(timeout=to)
         if Debug:
             print("[%s] XEQ: %s" % (s.host, s.ses.before))
         return True

@@ -23,8 +23,8 @@ resources:            # These are files and install packages that live in BLOBDI
     filename : "ga5_6_5_linux_x64.sh"
     user : "gau"
     mode : "755"
-    installdir : "."
-    destination : "/usr/local/HelpSystems"
+    destination : "."
+#    destination : "/usr/local/HelpSystems"
 
   roguekey :
     type : key-object
@@ -36,10 +36,10 @@ resources:            # These are files and install packages that live in BLOBDI
 
 actions:              # How to do the install
   - [NOP]
-  - [XEQ, "sudo useradd -m -d /usr/local/HelpSystems gau"]
-  - [XEQ, "chmod 755 ."]
+  - [XEQ, "sudo useradd -m -d /usr/local/HelpSystems gau",5]
+  - [XEQ, "chmod 755 .",2]
   - [XFER, resource: gainstaller,600]
-  - [XEQ, "sudo su gau"]
+  - [XEQ, "sudo su gau",2]
 #  - [XEQ, "sh ./ga5_6_5_linux_64.sh", 300,resource: answerfile]
   - [END]
 
