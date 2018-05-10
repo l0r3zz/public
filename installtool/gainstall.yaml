@@ -1,0 +1,47 @@
+%TAG !! tag:ambientnetworks.net,2018:
+---
+# All installtool configuration files have the following 4 sections
+#hosts:                # Put a list of Hosts that the actions will be applied to
+#resources:            # These are files and instaln packabes that live in BLOBDIR
+#actions:              # How to do the install
+#verify:               # verify that the install was successful
+
+hosts:                # Put a list of Hosts that the actions will be applied to
+  #  -
+  #  ip : localhost
+  #  user : repair
+  #  password : fubarbaz
+
+  -
+    ip : 52.27.161.117
+    user : ec2-user
+    sshkey : { resource: roguekey}
+
+resources:            # These are files and install packages that live in BLOBDIR
+  gainstaller :
+    type : file-object
+    filename : "ga5_6_5_linux_x64.sh"
+    user : "gau"
+    mode : "755"
+    installdir : "."
+    destination : "/usr/local/HelpSystems"
+
+  roguekey :
+    type : key-object
+    filename : "roguekey.pem"
+
+  answerfile :
+    type : answer-object
+    filename : "ga565-answers.yaml"
+
+actions:              # How to do the install
+  - [NOP]
+  - [XEQ, "sudo useradd -m -d /usr/local/HelpSystems gau"]
+  - [XEQ, "chmod 755 ."]
+  - [XFER, resource: gainstaller,600]
+  - [XEQ, "sudo su gau"]
+#  - [XEQ, "sh ./ga5_6_5_linux_64.sh", 300,resource: answerfile]
+  - [END]
+
+
+verify:               # verify that the install was successful
