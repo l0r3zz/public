@@ -51,6 +51,7 @@ class Session:
             print("pxssh failed on login")
             print(e)
         self.ses = s
+        self.ses.PROMPT ="[\$\#]"
 
 class InstalltoolOps:
     """ Class to hold all action operators so that we can leverage inspect"""
