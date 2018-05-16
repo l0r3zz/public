@@ -36,11 +36,11 @@ resources:            # These are files and install packages that live in BLOBDI
 
 actions:              # How to do the install
   - [NOP]
-  - [XEQ, "sudo useradd -m -d /usr/local/HelpSystems gau",5]
-  - [XEQ, "chmod 755 .",2]
-  - [XFER, resource: gainstaller,600]
-  - [XEQ, "sudo su gau",2]
-#  - [XEQ, "sh ./ga5_6_5_linux_64.sh", 300,resource: answerfile]
+  - [XEQ, "sudo useradd -m -d /usr/local/HelpSystems gau", timeout:5]
+  - [XEQ, "chmod 755 .", timeout:5]
+  - [XFER, file-object: gainstaller, timeout:600]
+  - [XEQ, "sudo su gau", timeout:2]
+#  - [XEQ, "sh ./ga5_6_5_linux_64.sh", timeout:300, answer-object:answerfile]
   - [END]
 
 

@@ -53,9 +53,9 @@ actions:              # How to do the install
   - [NOP]
   - [XEQ, "apt-get --yes update"]
   - [XEQ, "apt-get --yes install php5-common libapache2-mod-php5 php5-cli"]
-  - [XFER, resource: hello]
-  - [XFER, resource: htaccess]
-  - [XREM, resource: indexhtml]
+  - [XFER, file-object: hello]
+  - [XFER, file-object: htaccess]
+  - [XREM, file-object: indexhtml]
   - [XEQ, "service apache2 restart"]
   - [END]
 

@@ -91,17 +91,36 @@ class InstalltoolOps:
         user = s.uid
         pw = s.passwd
         key = s.sshkey
-        res_dict = r["resources"][op[1]["resource"]]
-        file = r["blobdir"] + "/" + res_dict["filename"]
-        dest = res_dict["destination"]
+
+        to = 30
+        key_object = ""
+        file_object = ""
+        answer_object = ""
+
+        if len(op) > 1:
+            for operand in op[1:]:
+                for k,v in operand.items():
+                    if k == "timeout":
+                        to = v
+                    elif k == "key-object":
+                        key_object = r["resources"][v]
+                    elif k == "file-object":
+                        file_object = r["resources"][v]
+                    elif k == "answer-object":
+                        answer_object = r["resources"][v]
+                    else:
+                        print("unknown operand %s" % r["resources"][v])
+
+        file = r["blobdir"] + "/" + file_object["filename"]
+        dest = file_object["destination"]
         if len(op) >2:
             to = int(op[2])
         else:
             to = 30
-        if "installdir" in res_dict:
-            target = res_dict["installdir"]
+        if "installdir" in file_object:
+            target = file_object["installdir"]
         else:
-            target = res_dict["destination"]
+            target = file_object["destination"]
         if s.passwd:
             xfrcmd = "/usr/bin/scp -q %s %s@%s:%s" % (file, user, host, target)
             (output,status) = pexpect.run(xfrcmd,
@@ -112,9 +131,9 @@ class InstalltoolOps:
             (output,status) = pexpect.run(xfrcmd, timeout=to,  withexitstatus=1)
         if status :
             print("XFER: file not transferred")
-        if "installdir" in res_dict:
+        if "installdir" in file_object:
             # if not root, we have to scp then move it into place
-            installfile = target + "/" + res_dict["filename"]
+            installfile = target + "/" + file_object["filename"]
             mvop =[ "XEQ", "cmd"]
             mvop[1] = "sudo mv %s %s" % (installfile,  dest)
             self.XEQ(s,r,mvop)
@@ -123,8 +142,25 @@ class InstalltoolOps:
         return True
 
     def XREM(self,s,r,op):
-        res_dict = r["resources"][op[1]["resource"]]
-        target = res_dict["destination"]
+        to = 30
+        key_object = ""
+        file_object = ""
+        answer_object = ""
+
+        if len(op) > 1:
+            for operand in op[1:]:
+                for k,v in operand.items():
+                    if k == "timeout":
+                        to = v
+                    elif k == "key-object":
+                        key_object = r["resources"][v]
+                    elif k == "file-object":
+                        file_object = r["resources"][v]
+                    elif k == "answer-object":
+                        answer_object = r["resources"][v]
+                    else:
+                        print("unknown operand %s" % r["resources"][v])
+        target = file_object["destination"]
         if s.passwd:
             s.ses.sendline("rm -f %s" % (target))
         elif s.sshkey:
@@ -135,10 +171,23 @@ class InstalltoolOps:
         return True
 
     def XEQ(self,s,r,op):
-        if len(op) >2:
-            to = int(op[2])
-        else:
-            to = 30
+        to = 30
+        key_object = ""
+        file_object = ""
+        answer_object = ""
+
+        if len(op) > 2:
+            for operand in op[2:]:
+                for k,v in operand.items():
+                    if k == "timeout":
+                        to = v
+                    elif k == "key-object":
+                        key_object = r["resources"][v]
+                    elif k == "file-object":
+                        file_object = r["resources"][v]
+                    elif k == "answerfile-object":
+                        answer_object = r["resources"][v]
+
         s.ses.sendline(op[1])
         s.ses.prompt(timeout=to)
         if Debug:
