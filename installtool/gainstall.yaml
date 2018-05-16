@@ -20,7 +20,7 @@ hosts:                # Put a list of Hosts that the actions will be applied to
 resources:            # These are files and install packages that live in BLOBDIR
   gainstaller :
     type : file-object
-    filename : "ga5_6_5_linux_x64.sh"
+    filename : "ga5_7_0_linux_x64.sh"
     user : "gau"
     mode : "755"
     destination : "."
