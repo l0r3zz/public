@@ -181,7 +181,7 @@ class InstalltoolOps:
                     key_object = r["resources"][v]
                 elif k == "file-object":
                     file_object = r["resources"][v]
-                elif k == "answerfile-object":
+                elif k == "answer-object":
                     answer_object = r["resources"][v]
 
         if answer_object :
