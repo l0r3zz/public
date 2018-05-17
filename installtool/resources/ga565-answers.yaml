@@ -1,32 +1,32 @@
 %TAG !! tag:ambientnetworks.net,2018:
 ---
 answers:               # answerfile for GoAnywhere 5.6.5 installer
-  - {'[c]o'}
-  - {'[enter]':'<nl>'}
-  - {'[enter]':'<nl>'}
-  - {'[enter]':'<nl>'}
-  - {'[enter]':'<nl>'}
-  - {'[enter]':'<nl>'}
-  - {'[enter]':'<nl>'}
-  - {'[enter]':'<nl>'}
-  - {'[enter]':'<nl>'}
-  - {'[enter]':'<nl>'}
-  - {'[enter]':'<nl>'}
-  - {'[enter]':'<nl>'}
-  - {'[enter]':'<nl>'}
-  - {'[enter]':'<nl>'}
-  - {'[enter]':'<nl>'}
-  - {'[enter]':'<nl>'}
-  - {'[enter]':'<nl>'}
-  - {'[enter]':'<nl>'}
+  - {'[c]':'o'}
+  - {'[enter]':"\n"}
+  - {'[enter]':"\n"}
+  - {'[enter]':"\n"}
+  - {'[enter]':"\n"}
+  - {'[enter]':"\n"}
+  - {'[enter]':"\n"}
+  - {'[enter]':"\n"}
+  - {'[enter]':"\n"}
+  - {'[enter]':"\n"}
+  - {'[enter]':"\n"}
+  - {'[enter]':"\n"}
+  - {'[enter]':"\n"}
+  - {'[enter]':"\n"}
+  - {'[enter]':"\n"}
+  - {'[enter]':"\n"}
+  - {'[enter]':"\n"}
+  - {'[enter]':"\n"}
   - {'[2]':'1'}
   - {']':'/usr/local/HelpSystems/GoAnywhere'}
-  - {']':'<nl>'}
-  - {'Port':'<nl>'}
+  - {']':"\n"}
+  - {'Port':"\n"}
   - {']':'4444'}
   - {']':'10021'}
   - {']':'9990'}
   - {']':'10022'}
-  - {']':'<nl>'}
-  - {']':'<nl>'}
-  - {']':'<nl>'}
+  - {']':"\n"}
+  - {']':"\n"}
+  - {']':"\n"}

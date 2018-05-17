@@ -113,10 +113,6 @@ class InstalltoolOps:
 
         file = r["blobdir"] + "/" + file_object["filename"]
         dest = file_object["destination"]
-        if len(op) >2:
-            to = int(op[2])
-        else:
-            to = 30
         if "installdir" in file_object:
             target = file_object["installdir"]
         else:
@@ -172,24 +168,45 @@ class InstalltoolOps:
 
     def XEQ(self,s,r,op):
         to = 30
-        key_object = ""
-        file_object = ""
-        answer_object = ""
+        key_object = None
+        file_object = None
+        answer_object = None
 
         if len(op) > 2:
             for operand in op[2:]:
-                for k,v in operand.items():
-                    if k == "timeout":
-                        to = v
-                    elif k == "key-object":
-                        key_object = r["resources"][v]
-                    elif k == "file-object":
-                        file_object = r["resources"][v]
-                    elif k == "answerfile-object":
-                        answer_object = r["resources"][v]
+                (k,v), = operand.items()
+                if k == "timeout":
+                    to = v
+                elif k == "key-object":
+                    key_object = r["resources"][v]
+                elif k == "file-object":
+                    file_object = r["resources"][v]
+                elif k == "answerfile-object":
+                    answer_object = r["resources"][v]
 
-        s.ses.sendline(op[1])
-        s.ses.prompt(timeout=to)
+        if answer_object :
+            answerfile = r["blobdir"] + "/" + answer_object["filename"]
+            answerlist = yaml.load(open(answerfile))
+            s.ses.sendline(op[1])
+            index =0
+            for ans in answerlist["answers"]:
+                (k,v), = ans.items()
+                rstatus = s.ses.expect([k,pexpect.TIMEOUT,pexpect.EOF],timeout=to)
+                if v =='\n':
+                    s.ses.sendline('')
+                else:
+                    s.ses.sendline(v)
+                if rstatus == 0:
+                    continue
+                elif rstatus == 1:
+                    print("Answer timed out at answer %d , aborting" % index)
+                else:
+                    print("Channel closed prematurely at answer %d" % index)
+                index = index+1
+            s.ses.prompt(timeout=to)
+        else:
+            s.ses.sendline(op[1])
+            s.ses.prompt(timeout=to)
         if Debug:
             print("[%s] XEQ: %s" % (s.host, s.ses.before))
         return True
