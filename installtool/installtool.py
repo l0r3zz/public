@@ -87,6 +87,8 @@ class InstalltoolOps:
         return True
 
     def XFER(self,s,r,op):
+        if Debug:
+            print("[%s] %s: START %s" % (s.host,op[0],op[1]))
         host = s.host
         user = s.uid
         pw = s.passwd
@@ -138,6 +140,8 @@ class InstalltoolOps:
         return True
 
     def XREM(self,s,r,op):
+        if Debug:
+            print("[%s] %s: START %s" % (s.host,op[0],op[1]))
         to = 30
         key_object = ""
         file_object = ""
@@ -167,6 +171,8 @@ class InstalltoolOps:
         return True
 
     def XEQ(self,s,r,op):
+        if Debug:
+            print("[%s] %s: START %s" % (s.host,op[0],op[1]))
         to = 30
         key_object = None
         file_object = None
@@ -186,7 +192,13 @@ class InstalltoolOps:
 
         if answer_object :
             answerfile = r["blobdir"] + "/" + answer_object["filename"]
-            answerlist = yaml.load(open(answerfile))
+            try:
+                answerlist = yaml.load(open(answerfile))
+            except (FileNotFoundError,
+                    yaml.scanner.ScannerError) as err:
+                print("Error:%s" % err)
+                sys.exit(1)
+
             s.ses.sendline(op[1])
             index =0
             for ans in answerlist["answers"]:
@@ -264,12 +276,17 @@ def read_config(av):
     """ Load the config file (runbook)"""
     config_path = av.file
     if os.path.exists(config_path):
-        rb = yaml.load(open(config_path))
+        try:
+            rb = yaml.load(open(config_path))
+        except yaml.scanner.ScannerError as err:
+            print("Error:%s" % err)
+            sys.exit(1)
         rb["blobdir"] = av.blobdir # for processes that need it
         rb["threads"] = av.threads # for processes that need it
         rb["verify-only"] = av.verify # for processes that need it
     else:
-        rb = {}
+        print("No runbook file found at %s" % config_path)
+        sys.exit(1)
     return rb
 
 

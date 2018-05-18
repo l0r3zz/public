@@ -20,7 +20,7 @@ hosts:                # Put a list of Hosts that the actions will be applied to
 resources:            # These are files and install packages that live in BLOBDIR
   gainstaller :
     type : file-object
-    filename : "ga5_6_5_linux_x64.sh"
+    filename : "ga5_7_0_linux_x64.sh"
     user : "gau"
     mode : "755"
     destination : "."
@@ -40,7 +40,7 @@ actions:              # How to do the install
   - [XEQ, "chmod 755 .", timeout : 5]
   - [XFER, file-object : gainstaller, timeout : 600]
   - [XEQ, "sudo su gau", timeout : 2]
-  - [XEQ, "sh ./ga5_6_5_linux_x64.sh", timeout : 300, answer-object : answerfile]
+  - [XEQ, "sh ./ga5_7_0_linux_x64.sh", timeout : 300, answer-object : answerfile]
   - [END]
 
 
