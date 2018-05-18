@@ -1,0 +1,32 @@
+%TAG !! tag:ambientnetworks.net,2018:
+---
+answers:               # answerfile for GoAnywhere 5.7.0 installer
+  - {'[c]':'o'}
+  - {'[enter]':"\n"}
+  - {'[enter]':"\n"}
+  - {'[enter]':"\n"}
+  - {'[enter]':"\n"}
+  - {'[enter]':"\n"}
+  - {'[enter]':"\n"}
+  - {'[enter]':"\n"}
+  - {'[enter]':"\n"}
+  - {'[enter]':"\n"}
+  - {'[enter]':"\n"}
+  - {'[enter]':"\n"}
+  - {'[enter]':"\n"}
+  - {'[enter]':"\n"}
+  - {'[enter]':"\n"}
+  - {'[enter]':"\n"}
+  - {'[enter]':"\n"}
+  - {'[enter]':"\n"}
+  - {'[2]':'1'}
+  - {']':'/usr/local/HelpSystems/GoAnywhere'}
+  - {']':"\n"}
+  - {'Port':"\n"}
+  - {']':'4444'}
+  - {']':'10021'}
+  - {']':'9990'}
+  - {']':'10022'}
+  - {']':"\n"}
+  - {']':"\n"}
+  - {']':"\n"}
