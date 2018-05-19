@@ -80,7 +80,10 @@ class InstalltoolOps:
         return result
 
     def _get_operands(self,s,r,op):
-        """ This internal function processes any qualifying operands """
+        """ This internal function processes any qualifying operands
+        and binds the values to specific variables that the Operators
+        use in execution, like timeout duration, or resource specifications
+        """
         to = 30
         k_o = None
         f_o = None
@@ -100,6 +103,7 @@ class InstalltoolOps:
         return to, k_o, f_o, a_o
 
     def NOP(self,s,r,op):
+        """ Send a newline and look for a prompt"""
         s.ses.sendline("")
         s.ses.prompt()
         if Debug:
@@ -107,6 +111,9 @@ class InstalltoolOps:
         return True
 
     def XFER(self,s,r,op):
+        """ Transfer a file using scp from the host running installtool
+        to a destination host somewhere on the internet
+        """
         if Debug:
             print("[%s] %s: START %s" % (s.host,op[0],op[1]))
         host = s.host
@@ -149,6 +156,7 @@ class InstalltoolOps:
         return True
 
     def XREM(self,s,r,op):
+        """ Remove a file from the remote host"""
         if Debug:
             print("[%s] %s: START %s" % (s.host,op[0],op[1]))
         to = 30
@@ -169,6 +177,7 @@ class InstalltoolOps:
         return True
 
     def XEQ(self,s,r,op):
+        """ Perform a cli command on the remote host"""
         if Debug:
             print("[%s] %s: START %s" % (s.host,op[0],op[1]))
         to = 30
@@ -212,6 +221,7 @@ class InstalltoolOps:
         return True
 
     def END(self,s,r,op):
+        """ Send a newline and look for a prompt but always return False"""
         s.ses.sendline("")
         s.ses.prompt()
         if Debug:
@@ -223,11 +233,15 @@ class InstalltoolOps:
 
 
 def pretty_print(obj, ofd=sys.stdout):
+    """ Dump a Python datastructure to a file (stdout is the default)
+    in a human friendly way"""
     json.dump(obj, ofd, sort_keys=True, indent=4)
     ofd.flush()
 
 
 def pretty_prints(str, ofd=sys.stdout):
+    """ Dump a json string to a file (stdout is the default)
+    in a human friendly way"""
     ofd.write("'")
     json.dump(json.loads(str), ofd, sort_keys=True, indent=4)
     ofd.write("'")
@@ -235,6 +249,8 @@ def pretty_prints(str, ofd=sys.stdout):
 
 
 def std_prints(str, ofd=sys.stdout):
+    """ Dump a json string to a file (stdout is the default)"""
+
     ofd.write("'")
     json.dump(json.loads(str), ofd)
     ofd.write("'")
@@ -245,6 +261,8 @@ def std_prints(str, ofd=sys.stdout):
 #############################   verify operators           ####################
 
 def CRL(h,rb,op):
+    """SInple URL health-check using curl, prints HTTP response and 1st
+    line of the response payload"""
     host = h["ip"]
     endpoint = op[1]
     crlcmd = "curl -q -i http://%s/%s" % (host, endpoint)
@@ -302,6 +320,8 @@ def process_runbook(rb):
         return
 
     def thrd(host):
+        """ Workhorse function that connects to the reomte host, performs
+        a login and sequentially performs all 'actions' through that session"""
         if "password" in host:
             session = Session(host['ip'], host['user'], host['password'])
         elif "sshkey" in host:
@@ -312,6 +332,7 @@ def process_runbook(rb):
             print("[%s]: No account authentication method provided" % host["ip"])
             return
         xeq(session, rb, rb["actions"])
+        return
 
     if not rb["verify-only"]:
         print("Remediating Hosts")
