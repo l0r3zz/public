@@ -79,6 +79,26 @@ class InstalltoolOps:
         result = eval(eval_cmd)
         return result
 
+    def _get_operands(self,s,r,op):
+        """ This internal function processes any qualifying operands """
+        to = 30
+        k_o = None
+        f_o = None
+        a_o = None
+        for operand in op:
+            (k,v), = operand.items()
+            if k == "timeout":
+                to = v
+            elif k == "key-object":
+                k_o = r["resources"][v]
+            elif k == "file-object":
+                f_o = r["resources"][v]
+            elif k == "answer-object":
+                a_o = r["resources"][v]
+            else:
+                 print("unknown operand %s" % r["resources"][v])
+        return to, k_o, f_o, a_o
+
     def NOP(self,s,r,op):
         s.ses.sendline("")
         s.ses.prompt()
@@ -95,23 +115,12 @@ class InstalltoolOps:
         key = s.sshkey
 
         to = 30
-        key_object = ""
-        file_object = ""
-        answer_object = ""
+        key_object = None
+        file_object = None
+        answer_object = None
 
         if len(op) > 1:
-            for operand in op[1:]:
-                for k,v in operand.items():
-                    if k == "timeout":
-                        to = v
-                    elif k == "key-object":
-                        key_object = r["resources"][v]
-                    elif k == "file-object":
-                        file_object = r["resources"][v]
-                    elif k == "answer-object":
-                        answer_object = r["resources"][v]
-                    else:
-                        print("unknown operand %s" % r["resources"][v])
+            to,key_object,file_object,answer_object = self._get_operands(s,r,op[1:])
 
         file = r["blobdir"] + "/" + file_object["filename"]
         dest = file_object["destination"]
@@ -143,23 +152,12 @@ class InstalltoolOps:
         if Debug:
             print("[%s] %s: START %s" % (s.host,op[0],op[1]))
         to = 30
-        key_object = ""
-        file_object = ""
-        answer_object = ""
+        key_object = None
+        file_object = None
+        answer_object = None
 
         if len(op) > 1:
-            for operand in op[1:]:
-                for k,v in operand.items():
-                    if k == "timeout":
-                        to = v
-                    elif k == "key-object":
-                        key_object = r["resources"][v]
-                    elif k == "file-object":
-                        file_object = r["resources"][v]
-                    elif k == "answer-object":
-                        answer_object = r["resources"][v]
-                    else:
-                        print("unknown operand %s" % r["resources"][v])
+            to,key_object,file_object,answer_object = self._get_operands(s,r,op[1:])
         target = file_object["destination"]
         if s.passwd:
             s.ses.sendline("rm -f %s" % (target))
@@ -179,17 +177,7 @@ class InstalltoolOps:
         answer_object = None
 
         if len(op) > 2:
-            for operand in op[2:]:
-                (k,v), = operand.items()
-                if k == "timeout":
-                    to = v
-                elif k == "key-object":
-                    key_object = r["resources"][v]
-                elif k == "file-object":
-                    file_object = r["resources"][v]
-                elif k == "answer-object":
-                    answer_object = r["resources"][v]
-
+            to,key_object,file_object,answer_object = self._get_operands(s,r,op[2:])
         if answer_object :
             answerfile = r["blobdir"] + "/" + answer_object["filename"]
             try:
@@ -331,8 +319,9 @@ def process_runbook(rb):
         # using NUM threads where -t NUM is specified, else hosts are processed
         # sequentially.
         if rb["threads"]:
-            with concurrent.futures.ThreadPoolExecutor(max_workers=rb["threads"]) as pool:
-                thread_results = list(pool.map(thrd,rb["hosts"]))
+            with concurrent.futures.ThreadPoolExecutor(
+                max_workers=rb["threads"]) as pool:
+                thread_results = list(pool.map(thrd, rb["hosts"]))
         else:
             for host in rb["hosts"]:
                 thrd(host)
