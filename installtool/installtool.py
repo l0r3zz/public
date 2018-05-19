@@ -11,6 +11,15 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
+###
+##
+#   installtool: A quick and easy "CM" program designed to  remotely install
+#   programs on linux platforms, expecially programs that require human
+#   interaction. This is accomplished by the use of yaml "runbooks" that
+#   define the list of hosts to remediate, the actions to perform to achieve
+#   the remediation and any verification steps to perform afterwards. Programs
+#   that expect human interaction can have and yaml "answer-file" provided
+#   which provides responses to expected output
 
 import argparse
 import sys
