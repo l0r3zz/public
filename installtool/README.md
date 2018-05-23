@@ -26,7 +26,7 @@ optional arguments:
                         perform host actions with M concurrent threads
   --loglevel LOGLEVEL, -l LOGLEVEL
                         Log Level, default is WARN
-
+```
 
 All installtool configuration files have the following 4 sections:
 ```
@@ -43,3 +43,4 @@ XEQ                   # followed by a command to execute remotely
 XREM                  # Remove a file from the remote hosts
 XFER                  # Transfer a file to the remote host via scp
 END                   # Don't expect any more "instructions"
+```
