@@ -1,7 +1,8 @@
 ## installtool
 Installtool is a python based CLI utility for scripting "one off" installs of software packages on Linux based servers.
 It is more light-weight then your typical CM tool like Puppet or Chef, but since it is "agentless" it does borrow from
-the philosophy of Ansible. There are two input components, a configuration file or manifest, composed in YAML and a "blob dir"
+the philosophy of Ansible. But unlike ansible, the "programming model" is more like assembly language, on the  _retro_ tip. There are the *actions* section consists of an array of arrays. Each individual array element in the action array is an _instruction_, Which has a single operator and is fillowed by zero or more _operands_. The XEQ operator MUST be followed by at least one operand, which is a string containing a bash shell command that will be executed on the remote host. There can also be some optional operands that control certain behavior (like _timeout_ ) or provide resource identifyers which is how files in the BLOBDIR are referenced by the instructions.
+There are two input components to the overall tool, a configuration file or manifest, composed in YAML and a "blob dir"
 which contains artifacts that will be transferred to the host to be configured based on descriptions found in the manifest under the resources section. A nifty feature of this tool is that you can provide a YAML "answer file" to automate the installation of some 3rd party apts that insist on requiring human keyboard interaction.
 
 This tool requires Python 3, the pexpect, yaml, json and inspect libraries
