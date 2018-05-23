@@ -30,10 +30,13 @@ from pexpect import pxssh
 import os
 import inspect
 import concurrent.futures
+import mylog
 
 
 #############################   Globals  ######################################
 Debug = False
+Log = None
+Quiet = False
 ###############################################################################
 
 #############################   Class Definitions  ############################
@@ -57,8 +60,7 @@ class Session:
             s.login(self.host, self.uid, self.passwd,
                     ssh_key=self.sshkey, login_timeout=30)
         except pexpect.pxssh.ExceptionPxssh as e:
-            print("pxssh failed on login")
-            print(e)
+            Log.error("pxssh failed on login %s" % e)
         self.ses = s
         self.ses.PROMPT ="[\$\#]"
 
@@ -82,7 +84,7 @@ class InstalltoolOps:
         try:
             op_spec = self.func_dict[op[0]]
         except KeyError :
-            print("Installtool: Operator %s not found, ignoring" % (op[0]))
+            Log.error("Installtool: Operator %s not found, ignoring" % (op[0]))
             return False
         eval_cmd = "self.%s(s,r,op)" % op[0]
         result = eval(eval_cmd)
@@ -108,7 +110,7 @@ class InstalltoolOps:
             elif k == "answer-object":
                 a_o = r["resources"][v]
             else:
-                 print("unknown operand %s" % r["resources"][v])
+                 Log.error("unknown operand %s" % r["resources"][v])
         return to, k_o, f_o, a_o
 
     def NOP(self,s,r,op):
@@ -116,7 +118,7 @@ class InstalltoolOps:
         s.ses.sendline("")
         s.ses.prompt()
         if Debug:
-            print("[%s] NOP: %s" % (s.host, s.ses.before))
+            Log.debug("[%s] NOP: %s" % (s.host, s.ses.before))
         return True
 
     def XFER(self,s,r,op):
@@ -124,7 +126,7 @@ class InstalltoolOps:
         to a destination host somewhere on the internet
         """
         if Debug:
-            print("[%s] %s: START %s" % (s.host,op[0],op[1]))
+            Log.debug("[%s] %s: START %s" % (s.host,op[0],op[1]))
         host = s.host
         user = s.uid
         pw = s.passwd
@@ -153,7 +155,7 @@ class InstalltoolOps:
             xfrcmd = "/usr/bin/scp -q -i %s %s %s@%s:%s" % (key, file, user, host, target)
             (output,status) = pexpect.run(xfrcmd, timeout=to,  withexitstatus=1)
         if status :
-            print("XFER: file not transferred")
+            Log.error("XFER: file not transferred")
         if "installdir" in file_object:
             # if not root, we have to scp then move it into place
             installfile = target + "/" + file_object["filename"]
@@ -161,13 +163,13 @@ class InstalltoolOps:
             mvop[1] = "sudo mv %s %s" % (installfile,  dest)
             self.XEQ(s,r,mvop)
         if Debug:
-            print("[%s] XFER: %s status: %s" % (s.host, file, status))
+            Log.debug("[%s] XFER: %s status: %s" % (s.host, file, status))
         return True
 
     def XREM(self,s,r,op):
         """ Remove a file from the remote host"""
         if Debug:
-            print("[%s] %s: START %s" % (s.host,op[0],op[1]))
+            Log.debug("[%s] %s: START %s" % (s.host,op[0],op[1]))
         to = 30
         key_object = None
         file_object = None
@@ -182,13 +184,13 @@ class InstalltoolOps:
             s.ses.sendline("sudo rm -f %s" % (target))
         s.ses.prompt()
         if Debug:
-            print("[%s] XREM: %s" % (s.host, s.ses.before))
+            Log.debug("[%s] XREM: %s" % (s.host, s.ses.before))
         return True
 
     def XEQ(self,s,r,op):
         """ Perform a cli command on the remote host"""
         if Debug:
-            print("[%s] %s: START %s" % (s.host,op[0],op[1]))
+            Log.debug("[%s] %s: START %s" % (s.host,op[0],op[1]))
         to = 30
         key_object = None
         file_object = None
@@ -202,7 +204,7 @@ class InstalltoolOps:
                 answerlist = yaml.load(open(answerfile))
             except (FileNotFoundError,
                     yaml.scanner.ScannerError) as err:
-                print("Error:%s" % err)
+                Log.error("Error:%s" % err)
                 sys.exit(1)
 
             s.ses.sendline(op[1])
@@ -217,16 +219,16 @@ class InstalltoolOps:
                 if rstatus == 0:
                     continue
                 elif rstatus == 1:
-                    print("Answer timed out at answer %d , aborting" % index)
+                    Log.error("Answer timed out at answer %d , aborting" % index)
                 else:
-                    print("Channel closed prematurely at answer %d" % index)
+                    Log.error("Channel closed prematurely at answer %d" % index)
                 index = index+1
             s.ses.prompt(timeout=to)
         else:
             s.ses.sendline(op[1])
             s.ses.prompt(timeout=to)
         if Debug:
-            print("[%s] XEQ: %s" % (s.host, s.ses.before))
+            Log.debug("[%s] XEQ: %s" % (s.host, s.ses.before))
         return True
 
     def END(self,s,r,op):
@@ -234,7 +236,7 @@ class InstalltoolOps:
         s.ses.sendline("")
         s.ses.prompt()
         if Debug:
-            print("[%s] END: %s" % (s.host, s.ses.before))
+            Log.debug("[%s] END: %s" % (s.host, s.ses.before))
         return False
 
 ###############################################################################
@@ -278,12 +280,13 @@ def CRL(h,rb,op):
     (output,status) = pexpect.run(crlcmd,withexitstatus=1)
     status_line = (output.splitlines()[0].decode("utf-8")
                    + " / " + output.splitlines()[-1].decode("utf-8"))
-    print("[%s]:%s" % (host,status_line))
-    if status :
+    if not Quiet:
+        print("[%s]:%s" % (host,status_line))
+    if status and not Quiet:
         print("CRL: %s FAIL" % (crlcmd))
 
     if Debug:
-        print("[%s] CRL: %s status: %s" % (host, output, status))
+        Log.debug("[%s] CRL: %s status: %s" % (host, output, status))
     return True
 ###############################################################################
 #############################   main function Definitions  ####################
@@ -294,13 +297,13 @@ def read_config(av):
         try:
             rb = yaml.load(open(config_path))
         except yaml.scanner.ScannerError as err:
-            print("Error:%s" % err)
+            Log.error("Error:%s" % err)
             sys.exit(1)
         rb["blobdir"] = av.blobdir # for processes that need it
         rb["threads"] = av.threads # for processes that need it
         rb["verify-only"] = av.verify # for processes that need it
     else:
-        print("No runbook file found at %s" % config_path)
+        Log.error("No runbook file found at %s" % config_path)
         sys.exit(1)
     return rb
 
@@ -310,7 +313,8 @@ def process_runbook(rb):
 
     def xeq(s,rb, action_list):
         """Execute a list of operations through the provided session with runbook"""
-        print("[%s]" % (s.host))
+        if not Quiet:
+            print("[%s]" % (s.host))
         thread = InstalltoolOps()
         for op in action_list:
             if not thread._xeq_op(s,rb,op):
@@ -338,13 +342,14 @@ def process_runbook(rb):
             keyfile = rb["blobdir"] + "/" + rb["resources"][key_resource]["filename"]
             session = Session(host['ip'], host['user'], key=keyfile)
         else:
-            print("[%s]: No account authentication method provided" % host["ip"])
+            Log.error("[%s]: No account authentication method provided" % host["ip"])
             return
         xeq(session, rb, rb["actions"])
         return
 
     if not rb["verify-only"]:
-        print("Remediating Hosts")
+        if not Quiet:
+            print("Remediating Hosts")
         # If you use the "-t" flag, hosts remediation will be done in parallel
         # using NUM threads where -t NUM is specified, else hosts are processed
         # sequentially.
@@ -356,7 +361,8 @@ def process_runbook(rb):
             for host in rb["hosts"]:
                 thrd(host)
 
-    print("Verifying Hosts")
+    if not Quiet:
+        print("Verifying Hosts")
     for host in rb['hosts']:
         vfy(host, rb, rb["verify"])
     return 0
@@ -378,19 +384,35 @@ def main():
                      help="If present, directory to get deploy artifacts from")
         parser.add_argument('--debug', "-d", action="store_true",
                      help="Enable various debugging output")
+        parser.add_argument('--quiet', "-q", action="store_true",
+                     help="silence all output")
         parser.add_argument('--verify', "-v", action="store_true",
                      help="Perform only the verification actions on the host list")
         parser.add_argument('--threads', "-t", type=int, default=0,
                      help="perform host actions with M concurrent threads")
+        parser.add_argument('--loglevel', "-l", default="WARN",
+                     help="Log Level, default is WARN")
         args = parser.parse_args()
         return args
 
     argv = get_opts()
     global Debug
+    global Log
+    global Quiet
     Debug = argv.debug
+    if Debug:
+        loglevel = "DEBUG"
+    else:
+        loglevel = argv.loglevel
+    if argv.quiet:
+        Quiet = True
+        devnull = open("/dev/null","w")
+        Log = mylog.logg("installtool", cnsl=True, llevel=loglevel, sh=devnull)
+    else:
+        Log = mylog.logg("installtool", cnsl=True, llevel=loglevel)
     runbook = read_config(argv)
     process_runbook(runbook)
-    if Debug:
+    if Debug and not Quiet:
         pretty_print(runbook)
     return 0
 
