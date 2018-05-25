@@ -7,8 +7,8 @@ setup(
     name = "installtool",
     version = "0.95",
     packages = find_packages(),
-    py_modules = ['mylog', 'inspect', 'concurrent.futures'],
-    install_requires = ['jira_python>=0.13', 'PyYAML'],
+    py_modules = ['mylog'],
+    install_requires = ['concurrent.futures', 'pexpect'],
     python_requires='>=3',
 
     # metadata for upload to PyPI
