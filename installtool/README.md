@@ -74,6 +74,6 @@ The command
 ```
 installtool.py -df phpinstall.yaml -b resources
 ```
-Will perform the manifest *phpinstall.yaml* with verbose output utilizing resources that will be found in the director *resources*
+Will perform the manifest *phpinstall.yaml* with verbose output utilizing resources that will be found in the directory *resources*
 
 Enjoy and Deploy!
