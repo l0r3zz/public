@@ -59,9 +59,6 @@ optional arguments:
                         Log Level, default is WARN
 ```
 
-All installtool configuration files have the following 4 sections:
-
-
 There are currently 5 "operators" available for use in the *actions* section :
 ```
 NOP                   # Just send a \n to the session
