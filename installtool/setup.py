@@ -5,7 +5,7 @@ with open("README.md","r") as fh:
     long_description = fh.read()
 setup(
     name = "installtool",
-    version = "0.96.1.2",
+    version = "0.96.1.3",
     packages = find_packages(),
     py_modules = ['mylog', 'installtool'],
     install_requires = [ 'pexpect'],
