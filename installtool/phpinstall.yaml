@@ -13,7 +13,7 @@ hosts:                # Put a list of Hosts that the actions will be applied to
   #  password : fubarbaz
 
   -
-    ip : 52.90.0.129
+    ip : 52.90.0.128
     user : root
     password : foobarbaz
 
