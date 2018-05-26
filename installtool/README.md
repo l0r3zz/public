@@ -67,3 +67,13 @@ XREM                  # Remove a file from the remote hosts
 XFER                  # Transfer a file to the remote host via scp
 END                   # Don't expect any more "instructions"
 ```
+
+To get a sense of how the tool works, take a look at *phpinstall.yaml* which will install Apache, PHP, and set an index.php file to display "Hello World!" when you browse to http://<host_name>/. *gainstall.yaml* together with the answer-file in the *resources* directory *ga570-answers.yaml* is an example of using the tool to install a third party app that requires human interaction, in this case, the GoAnywhere MFT.
+
+The command
+```
+installtool.py -df phpinstall.yaml -b resources
+```
+Will perform the manifest *phpinstall.yaml* with verbose output utilizing resources that will be found in the director *resources*
+
+Enjoy and Deploy!
