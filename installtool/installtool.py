@@ -76,10 +76,18 @@ class InstalltoolOps:
 
     def _xeq_op(self,s, r, op):
         """ This is the internl execution function that allows us to do away
-        with the if-elif tree in the upstream xeq function. It is not enumerated
-        by __init__ when the function table is created.  This allows for the easy
+        with the if-elif tree in the upstream xeq function. It references
+        the func_dict dictionary where actions are entered by by __init__ when
+        the function table is created.  This allows for the easy
         extension of user exposed functionality by just adding new functions
         to this Class.
+        All actions must have the same calling structure:
+            OP([self], s, r, op)
+            where:
+                s     is the Session Object the OP operates on
+                r     is a pointer to the runbook datastructure
+                op    is the list of the current instruction, op and operands
+
         """
         try:
             op_spec = self.func_dict[op[0]]
@@ -138,7 +146,8 @@ class InstalltoolOps:
         answer_object = None
 
         if len(op) > 1:
-            to,key_object,file_object,answer_object = self._get_operands(s,r,op[1:])
+            to,key_object,file_object,answer_object = (
+                self._get_operands(s,r,op[1:]))
 
         file = r["blobdir"] + "/" + file_object["filename"]
         dest = file_object["destination"]
@@ -152,7 +161,8 @@ class InstalltoolOps:
                                           events={"password: ":pw+'\n'},
                                           timeout=to, withexitstatus=1)
         elif s.sshkey:
-            xfrcmd = "/usr/bin/scp -q -i %s %s %s@%s:%s" % (key, file, user, host, target)
+            xfrcmd = "/usr/bin/scp -q -i %s %s %s@%s:%s" % (
+                key, file, user, host, target)
             (output,status) = pexpect.run(xfrcmd, timeout=to,  withexitstatus=1)
         if status :
             Log.error("XFER: file not transferred")
@@ -176,7 +186,8 @@ class InstalltoolOps:
         answer_object = None
 
         if len(op) > 1:
-            to,key_object,file_object,answer_object = self._get_operands(s,r,op[1:])
+            to,key_object,file_object,answer_object = (
+                self._get_operands(s,r,op[1:]))
         target = file_object["destination"]
         if s.passwd:
             s.ses.sendline("rm -f %s" % (target))
@@ -197,7 +208,8 @@ class InstalltoolOps:
         answer_object = None
 
         if len(op) > 2:
-            to,key_object,file_object,answer_object = self._get_operands(s,r,op[2:])
+            to,key_object,file_object,answer_object = (
+                self._get_operands(s,r,op[2:]))
         if answer_object :
             answerfile = r["blobdir"] + "/" + answer_object["filename"]
             try:
@@ -211,7 +223,8 @@ class InstalltoolOps:
             index =0
             for ans in answerlist["answers"]:
                 (k,v), = ans.items()
-                rstatus = s.ses.expect([k,pexpect.TIMEOUT,pexpect.EOF],timeout=to)
+                rstatus = s.ses.expect(
+                    [k,pexpect.TIMEOUT,pexpect.EOF],timeout=to)
                 if v =='\n':
                     s.ses.sendline('')
                 else:
@@ -219,7 +232,7 @@ class InstalltoolOps:
                 if rstatus == 0:
                     continue
                 elif rstatus == 1:
-                    Log.error("Answer timed out at answer %d , aborting" % index)
+                    Log.error("Answer timed out at answer %d ,aborting" % index)
                 else:
                     Log.error("Channel closed prematurely at answer %d" % index)
                 index = index+1
@@ -309,10 +322,12 @@ def read_config(av):
 
 
 def process_runbook(rb):
-    """Perform the 'actions' across all 'hosts' using the supplied 'resources'"""
+    """Perform the 'actions' across all 'hosts' using the supplied
+    'resources'"""
 
     def xeq(s,rb, action_list):
-        """Execute a list of operations through the provided session with runbook"""
+        """Execute a list of operations through the provided session
+        with runbook"""
         if not Quiet:
             print("[%s]" % (s.host))
         thread = InstalltoolOps()
@@ -339,10 +354,12 @@ def process_runbook(rb):
             session = Session(host['ip'], host['user'], host['password'])
         elif "sshkey" in host:
             key_resource = host["sshkey"]["resource"]
-            keyfile = rb["blobdir"] + "/" + rb["resources"][key_resource]["filename"]
+            keyfile = (rb["blobdir"] + "/" +
+                       rb["resources"][key_resource]["filename"])
             session = Session(host['ip'], host['user'], key=keyfile)
         else:
-            Log.error("[%s]: No account authentication method provided" % host["ip"])
+            Log.error("[%s]: No account authentication method provided"
+                      % host["ip"])
             return
         xeq(session, rb, rb["actions"])
         return
@@ -371,8 +388,7 @@ def process_runbook(rb):
 ###############################################################################
 def main():
     """
-    usage: installtool.py [-h] [--file FILE] [--blobdir BLOBDIR] [--debug]
-                      [--verify]
+    Program main loop
     """
 
     def get_opts():
