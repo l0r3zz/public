@@ -1,15 +1,15 @@
 ## installtool
-Installtool is a python based CLI utility for scripting "one off" installs of software packages on Linux based servers.
-It is more light-weight then your typical CM tool like *Puppet* or *Chef*, but since it is *agentless*, it does borrow from the philosophy of Ansible. But unlike Ansible, the *programming model* is more like assembly language, on the  _retro_ tip.
-The manifiest is rendered in **YAML** and containes 4 basic sections:
+Installtool is a python based CLI utility for scripting "one-off" installs of software packages on Linux based servers.
+It is more light-weight then your typical CM tool like *Puppet* or *Chef*, but since it is *agentless*, it does borrow from the philosophy of Ansible. Unlike Ansible however, the *programming model* is more like assembly language, on the  _retro_ tip.
+The manifiest or **runbook** as it is called, is rendered in **YAML** and containes 4 basic sections:
 ```
 hosts:                # Put a list of Hosts that the actions will be applied to
-resources:            # These are files and instaln packabes that live in BLOBDIR
+resources:            # These are files and instaln packages that live in BLOBDIR
 actions:              # How to do the install
 verify:               # verify that the install was successful
 ```
 
-The **hosts** section specifys a list of Host entries, each entry is a dict with the fillowing fields:
+The **hosts** section specifys a list of Host entries. Each entry is a dict with the fillowing fields:
 ```
 
     ip : <addr or fqdn>
@@ -17,7 +17,7 @@ The **hosts** section specifys a list of Host entries, each entry is a dict with
     password : <string>  OR sshkey : { resource: <key_resource>}
 ```
 
-The **resources** section contains  *resource definition*. It is a dictionary where the key is the resource name, and the value is a dict which contains various key-value pairs, depending on the value of the mandatory key **type**, for example:
+The **resources** section contains  *resource definitions*. It is a dictionary where the key is the resource name, and the value is a dict which contains various key-value pairs, depending on the value of the mandatory key, **type**. For example:
 ```
   roguekey :
     type : key-object
@@ -25,17 +25,17 @@ The **resources** section contains  *resource definition*. It is a dictionary wh
 ```
 Defines an ssh key resource which is contained in the file named "roguekey.pem". All files that are specified in this section are located in the path specified by the **--blobdir** option on the command line. If that option is missing, then the current working directory is assumed.
 
-The **actions** section consists of an array of arrays. Each individual array element in the action array is an _instruction_, Which has a single operator and is followed by zero or more _operands_. The XEQ operator MUST be followed by at least one operand, which is a string containing a bash shell command that will be executed on the remote host. There can also be some optional operands that control certain behavior (like _timeout_ ) or provide resource identifiers which are how files in the BLOBDIR are referenced by the instructions.
+The **actions** section consists of an array of arrays. Each individual array element in the actions array is an _instruction_. Instructions have a single operator and can be followed by zero or more _operands_. The **XEQ** operator MUST be followed by at least one operand, which is a string containing a bash shell command that will be executed on the remote host. There can also be some optional operands that control certain behavior (like _timeout_ ) or provide resource identifiers which are how files in the BLOBDIR are referenced by the instructions.
 
-The **verify** section contains special instructions to verify the results of the operations performed in the **actions** section on each host specified in the **hosts** section. Currently the only instruction that is available is a simple "health check":
+The **verify** section contains special instructions to verify the results of the operations performed in the **actions** section on each host specified in the **hosts** section. Currently, the only instruction that is available is a simple "health check":
 ```
 CRL                 # operand is an http path, i.e. "/" will perform a GET on http://<host>/
 ```
 
-There are two input components to the overall tool, a configuration file or manifest, composed in YAML and a "blob dir"
-which contains artifacts that will be transferred to the host to be configured based on descriptions found in the manifest under the resources section. A nifty feature of this tool is that you can provide a YAML "answer file" to automate the installation of some 3rd party apts that insist on requiring human keyboard interaction.
+There are two input components to the overall tool, a configuration file or runbook, composed in YAML and a "blob dir"
+which contains artifacts that will be transferred to the host to be configured based on descriptions found in the runbook under the _resources_ section. A nifty feature of this tool is that you can provide a YAML **answer-file** to automate the installation of some 3rd party apps that insist on requiring human keyboard interaction.
 
-This tool requires Python 3, the pexpect, yaml, json and inspect libraries
+This tool requires Python 3, the pexpect, yaml, json and inspect libraries.
 
 
 ```
@@ -68,12 +68,12 @@ XFER                  # Transfer a file to the remote host via scp
 END                   # Don't expect any more "instructions"
 ```
 
-To get a sense of how the tool works, take a look at *phpinstall.yaml* which will install Apache, PHP, and set an index.php file to display "Hello World!" when you browse to http://<host_name>/. *gainstall.yaml* together with the answer-file in the *resources* directory *ga570-answers.yaml* is an example of using the tool to install a third party app that requires human interaction, in this case, the GoAnywhere MFT.
+To get a sense of how the tool works, take a look at *phpinstall.yaml* which will install Apache, PHP, and set an index.php file to display "Hello World!" when you browse to http://<host_name>/. The runbook *gainstall.yaml* together with the answer-file in the *resources* directory *ga570-answers.yaml* is an example of using the tool to install a third party app that requires human interaction, in this case, the GoAnywhere MFT.
 
 The command
 ```
 installtool.py -df phpinstall.yaml -b resources
 ```
-Will perform the manifest *phpinstall.yaml* with verbose output utilizing resources that will be found in the directory *resources*
+Will perform the runbook *phpinstall.yaml* with verbose output utilizing resources that will be found in the directory *resources*
 
 Enjoy and Deploy!
