@@ -5,7 +5,7 @@ with open("README.md","r") as fh:
     long_description = fh.read()
 setup(
     name = "installtool",
-    version = "0.96.1.3",
+    version = "0.97.0.0",
     packages = find_packages(),
     py_modules = ['mylog', 'installtool'],
     install_requires = [ 'pexpect'],
@@ -14,7 +14,7 @@ setup(
     # metadata for upload to PyPI
     author = "Geoff White",
     author_email = "geoffw@ambientnetworks.org",
-    description = "Perform remote installs using yaml manifests",
+    description = "Perform remote installs using yaml runbooks",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/l0r3zz/public/installtool",
