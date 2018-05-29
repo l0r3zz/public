@@ -13,7 +13,7 @@ hosts:                # Put a list of Hosts that the actions will be applied to
   #  password : fubarbaz
 
   -
-    ip : 52.27.161.117
+    ip : 10.27.161.117
     user : ec2-user
     sshkey : { resource: roguekey}
 

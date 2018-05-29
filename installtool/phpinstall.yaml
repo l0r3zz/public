@@ -13,17 +13,17 @@ hosts:                # Put a list of Hosts that the actions will be applied to
   #  password : fubarbaz
 
   -
-    ip : 52.90.0.128
+    ip : 10.90.0.128
     user : root
     password : foobarbaz
 
   -
-    ip : 52.90.128.220
+    ip : 10.90.128.220
     user : root
     password : foobarbaz
 
   -
-    ip : 54.227.113.247
+    ip : 10.227.113.247
     user : root
     password : foobarbaz
 
