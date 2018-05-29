@@ -9,7 +9,7 @@ actions:              # How to do the install
 verify:               # verify that the install was successful
 ```
 
-The **hosts** section specifys a list of Host entries. Each entry is a dict with the fillowing fields:
+The **hosts** section specifys a list of Host entries. Each entry is a dict with the following fields:
 ```
 
     ip : <addr or fqdn>
@@ -17,7 +17,7 @@ The **hosts** section specifys a list of Host entries. Each entry is a dict with
     password : <string>  OR sshkey : { resource: <key_resource>}
 ```
 
-The **resources** section contains  *resource definitions*. It is a dictionary where the key is the resource name, and the value is a dict which contains various key-value pairs, depending on the value of the mandatory key, **type**. For example:
+The **resources** section contains  *resource definitions*. It is a dictionary where the key is the resource name, and the value is a dict which contains various key-value pairs depending on the value of the mandatory key, **type**. For example:
 ```
   roguekey :
     type : key-object
@@ -25,7 +25,46 @@ The **resources** section contains  *resource definitions*. It is a dictionary w
 ```
 Defines an ssh key resource which is contained in the file named "roguekey.pem". All files that are specified in this section are located in the path specified by the **--blobdir** option on the command line. If that option is missing, then the current working directory is assumed.
 
-The **actions** section consists of an array of arrays. Each individual array element in the actions array is an _instruction_. Instructions have a single operator and can be followed by zero or more _operands_. The **XEQ** operator MUST be followed by at least one operand, which is a string containing a bash shell command that will be executed on the remote host. There can also be some optional operands that control certain behavior (like _timeout_ ) or provide resource identifiers which are how files in the BLOBDIR are referenced by the instructions.
+The **actions** section consists of an array of arrays. Each individual array element in the actions array is an _instruction_. Instructions have a single operator and can be followed by zero or more _operands_. One way to look at this 
+layout, is as an assembly language or microcode program. 
+Here's a snippet of "code", that will install Apache, PHP, and load an index.php file into the Web server's html directory.
+```
+actions:              # How to do the install
+  - [NOP]
+  - [XEQ, "apt-get --yes update"]
+  - [XEQ, "apt-get --yes install php5-common libapache2-mod-php5 php5-cli"]
+  - [XFER, file-object: hello]
+  - [XFER, file-object: htaccess]
+  - [XREM, file-object: indexhtml]
+  - [XEQ, "service apache2 restart"]
+  - [END]
+
+```
+The **XEQ** operator MUST be followed by at least one operand, which is a string containing a bash shell command that will be executed on the remote host. There can also be some optional operands that control certain behavior (like _timeout_ ) or provide resource identifiers which are how files in the BLOBDIR are referenced by the instructions. Here the resource identifiers of the **XFER** instructions, describe various files and where they should be loaded, the resource identifier of the **XREM** instruction, describes the path to a file that needs to be removed.
+```
+resources:            # These are files and install packages that live in BLOBDIR
+  hello :
+    type : file-object
+    filename : "hello.php"
+    user : "root"
+    mode : "755"
+    destination : "/var/www/html/index.php"
+
+  indexhtml :
+    type : file-object
+    filename : "index.html"
+    user : "root"
+    mode : "755"
+    destination : "/var/www/html/index.html"
+
+  htaccess :
+    type : file-object
+    filename : "htaccess"
+    user : "root"
+    mode : "700"
+    destination : "/var/www/html/.htaccess"
+
+```
 
 The **verify** section contains special instructions to verify the results of the operations performed in the **actions** section on each host specified in the **hosts** section. Currently, the only instruction that is available is a simple "health check":
 ```
