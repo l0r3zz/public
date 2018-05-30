@@ -148,6 +148,9 @@ class InstalltoolOps:
         if len(op) > 1:
             to,key_object,file_object,answer_object = (
                 self._get_operands(s,r,op[1:]))
+        else:
+            Log.error("no  operands provided for XFER" )
+            return False
 
         file = r["blobdir"] + "/" + file_object["filename"]
         dest = file_object["destination"]
@@ -188,6 +191,9 @@ class InstalltoolOps:
         if len(op) > 1:
             to,key_object,file_object,answer_object = (
                 self._get_operands(s,r,op[1:]))
+        else:
+            Log.error("[%s] : no  operands provided for XREM" % (s.host) )
+            return False
         target = file_object["destination"]
         if s.passwd:
             s.ses.sendline("rm -f %s" % (target))
@@ -210,6 +216,9 @@ class InstalltoolOps:
         if len(op) > 2:
             to,key_object,file_object,answer_object = (
                 self._get_operands(s,r,op[2:]))
+        elif len(op) == 1:
+            Log.debug("[%s] %s: not enough operands" % (s.host, op[0]))
+            return False
         if answer_object :
             answerfile = r["blobdir"] + "/" + answer_object["filename"]
             try:
