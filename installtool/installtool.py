@@ -61,6 +61,7 @@ class Session:
                     ssh_key=self.sshkey, login_timeout=30)
         except pexpect.pxssh.ExceptionPxssh as e:
             Log.error("pxssh failed on login %s" % e)
+            return None
         self.ses = s
         self.ses.PROMPT ="[\$\#]"
 
@@ -368,6 +369,10 @@ def process_runbook(rb):
             session = Session(host['ip'], host['user'], key=keyfile)
         else:
             Log.error("[%s]: No account authentication method provided"
+                      % host["ip"])
+            return
+        if session == None:
+            Log.error("[%s]: could not login to host, skipping"
                       % host["ip"])
             return
         xeq(session, rb, rb["actions"])
