@@ -5,7 +5,7 @@ with open("README.md","r") as fh:
     long_description = fh.read()
 setup(
     name = "installtool",
-    version = "0.99.0.0",
+    version = "0.99.7",
     packages = find_packages(),
     py_modules = ['mylog', 'installtool'],
     install_requires = [ 'pexpect'],
@@ -17,7 +17,7 @@ setup(
     description = "Perform remote installs using yaml runbooks",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/l0r3zz/public/tree/master/installtool"
+    url="https://github.com/l0r3zz/public/tree/master/installtool",
     license = "Apache 2.0",
     keywords = "install automation remote yaml ",
     classifiers=[
