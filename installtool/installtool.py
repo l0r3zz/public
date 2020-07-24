@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 #Copyright (c) 2018 Geoffrey White
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
@@ -423,9 +424,14 @@ def main():
         parser.add_argument('--loglevel', "-l", default="WARN",
                      help="Log Level, default is WARN")
         args = parser.parse_args()
+        if len(sys.argv) == 1:
+            parser.print_help(sys.stderr)
+            sys.exit(1)
         return args
 
     argv = get_opts()
+    if len(argv) == 1:
+        sys.exit(1)
     global Debug
     global Log
     global Quiet
