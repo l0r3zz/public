@@ -1,6 +1,6 @@
 ## installtool
 Installtool is a python based CLI utility for scripting "one-off" installs of software packages on Linux based servers.
-It is more light-weight then your typical CM tool like *Puppet* or *Chef*, but since it is *agentless*, it does borrow from the philosophy of Ansible. Unlike Ansible however, the *programming model* is more like assembly language, on the  _retro_ tip.
+It is more light-weight then your typical CM tool like *Puppet* or *Chef*, but since it is *agentless*, it does borrow from the philosophy of Ansible. Unlike Ansible however, the *programming model* is more like assembly language.
 The manifiest or **runbook** as it is called, is rendered in **YAML** and containes 4 basic sections:
 ```
 hosts:                # Put a list of Hosts that the actions will be applied to
@@ -15,6 +15,12 @@ The **hosts** section specifys a list of Host entries. Each entry is a dict with
     ip : <addr or fqdn>
     user : <userid>
     password : <string>  OR sshkey : { resource: <key_resource>}
+```
+If you want to use this program locally, you should create a **service account** either with a _password_ or better yet, and _sshkey_. Make sure to create an entry in _/etc/sudoers_ so that no passord is needed to **sudo**  An entry like this:
+```
+#entry for a service account
+agentsmith ALL=(ALL) NOPASSWD:ALL
+
 ```
 
 The **resources** section contains  *resource definitions*. It is a dictionary where the key is the resource name, and the value is a dict which contains various key-value pairs depending on the value of the mandatory key, **type**. For example:
