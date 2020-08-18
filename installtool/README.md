@@ -86,7 +86,7 @@ which contains artifacts that will be transferred to the host to be configured b
 ```
 and reference the resource name as an operand on an **XEQ** instruction like this 
 ```
-[XEQ, "apt-get --yes install php5-common libapache2-mod-php5 php5-cli", answer-file : 300]
+[XEQ, "sh ./ga5_7_0_linux_x64.sh", timeout : 300, answer-object : answerfile]
 ```
 
 This tool requires Python 3, the pexpect, yaml, json and inspect libraries.
