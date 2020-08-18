@@ -78,7 +78,16 @@ The **verify** section contains special instructions to verify the results of th
 CRL                 # operand is an http path, i.e. "/" will perform a GET on http://<host>/
 ```
 There are two input components to the overall tool, a configuration file or runbook, composed in YAML and a "blob dir"
-which contains artifacts that will be transferred to the host to be configured based on descriptions found in the runbook under the _resources_ section. A nifty feature of this tool is that you can provide a YAML **answer-file** to automate the installation of some 3rd party apps that insist on requiring human keyboard interaction.
+which contains artifacts that will be transferred to the host to be configured based on descriptions found in the runbook under the _resources_ section. A nifty feature of this tool is that you can provide a YAML **answer-file** to automate the installation of some 3rd party apps that insist on requiring human keyboard interaction. You define an _answer file resource_ like this...
+```
+  answerfile :
+    type : answer-object
+    filename : "ga565-answers.yaml"
+```
+and reference the resource name as an operand on an **XEQ** instruction like this 
+```
+[XEQ, "apt-get --yes install php5-common libapache2-mod-php5 php5-cli", answer-file : 300]
+```
 
 This tool requires Python 3, the pexpect, yaml, json and inspect libraries.
 
