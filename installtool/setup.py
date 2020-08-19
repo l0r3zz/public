@@ -5,7 +5,7 @@ with open("README.md","r") as fh:
     long_description = fh.read()
 setup(
     name = "installtool",
-    version = "0.99.7",
+    version = "1.0",
     packages = find_packages(),
     py_modules = ['mylog', 'installtool'],
     install_requires = [ 'pexpect'],
@@ -25,7 +25,7 @@ setup(
     #   3 - Alpha
     #   4 - Beta
     #   5 - Production/Stable
-    'Development Status :: 4 - Beta',
+    'Development Status :: 5 - Beta',
 
     # Indicate who your project is intended for
     'Intended Audience :: System Administrators',
@@ -42,6 +42,7 @@ setup(
     'Programming Language :: Python :: 3.4',
     'Programming Language :: Python :: 3.5',
     'Programming Language :: Python :: 3.6',
+    'Programming Language :: Python :: 3.7'
     ],
     entry_points = {
         'console_scripts': [
