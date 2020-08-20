@@ -74,7 +74,7 @@ class InstalltoolOps:
             if not func.startswith('_') and eval(
                 ("hasattr( self.%s,'__call__')") % func):
                 self.func_dict[func] = eval(
-                    "inspect.getargspec(self.%s)" % func )
+                    "inspect.getfullargspec(self.%s)" % func )
 
     def _xeq_op(self,s, r, op):
         """ This is the internl execution function that allows us to do away
@@ -224,7 +224,7 @@ class InstalltoolOps:
         if answer_object :
             answerfile = r["blobdir"] + "/" + answer_object["filename"]
             try:
-                answerlist = yaml.load(open(answerfile))
+                answerlist = yaml.load(open(answerfile), Loader=yaml.SafeLoader)
             except (FileNotFoundError,
                     yaml.scanner.ScannerError) as err:
                 Log.error("Error:%s" % err)
@@ -319,7 +319,7 @@ def read_config(av):
     config_path = av.file
     if os.path.exists(config_path):
         try:
-            rb = yaml.load(open(config_path))
+            rb = yaml.load(open(config_path), Loader=yaml.SafeLoader)
         except yaml.scanner.ScannerError as err:
             Log.error("Error:%s" % err)
             sys.exit(1)
