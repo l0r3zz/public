@@ -430,8 +430,6 @@ def main():
         return args
 
     argv = get_opts()
-    if len(argv) == 1:
-        sys.exit(1)
     global Debug
     global Log
     global Quiet
